@@ -14,18 +14,31 @@ em massa, IDORs e outras vulnerabilidades.
 ## Organização dos Arquivos
 
 ├── app.py
+
 ├── blueprints/
+
 │   └── auth.py
+
 ├── config.py
+
 ├── db.py
+
 ├── extensions.py
+
 ├── instances/
+
 │   └── app.db
+
 ├── logs/
+
 │   └── testeLog.log
+
 ├── README.md
+
 ├── requirements.txt
+
 ├── utils.py
+
 └── validations.py
 
 ## Tecnologias 

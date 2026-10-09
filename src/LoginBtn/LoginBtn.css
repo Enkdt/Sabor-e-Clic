@@ -1,0 +1,18 @@
+.loginBtn{
+    font-family: poppins;
+    font-weight: 300;
+    background-color: #73980D;
+    color: #FFFAF5;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 0 12px 0;
+    cursor: pointer;
+    font-size: 24px;
+    margin: 48px;
+    transition: all 0.3s ease;
+    width: 360px;
+}
+
+.loginBtn:hover{
+    background-color: #506a07;
+}

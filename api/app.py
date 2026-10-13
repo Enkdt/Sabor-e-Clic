@@ -1,5 +1,5 @@
 #Arquivo para inicialização e reunião do flask
-#TODO: Organizar imports dps e add flask wtf, flask jwt extended
+#TODO: Organizar imports dps e add flask wtf (ADICIONADO), flask jwt extended
 
 import db
 import logging

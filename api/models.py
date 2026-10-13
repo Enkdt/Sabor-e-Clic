@@ -7,6 +7,7 @@ from extensions import db
 # TODO: Ligar isso a um banco de dados funcional
 # TODO: Testar 0-0
 
+
 class Usuario(db.Model):
     __tablename__ = 'usuario'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -36,6 +37,9 @@ class Cozinheiro(db.Model):
     usuario: Mapped['Usuario'] = relationship(back_populates='cozinheiro')
     turno: Mapped[list['Turno']] = relationship(back_populates='cozinheiro', cascade='all, delete-orphan')
     agendamento: Mapped[list['Agendamento']] = relationship(back_populates='cozinheiro')
+    pedidos: Mapped[list['Pedido']] = relationship(secondary='CozinheiroPedido', back_populates='cozinheiros')
+    associacao_pedido: Mapped[list['CozinheiroPedido']] = relationship(back_populates='cozinheiro')
+
 
 class Turno(db.Model):
     __tablename__ = 'turno'
@@ -80,6 +84,12 @@ class Pedido(db.Model):
     status: Mapped[str] = mapped_column(String(20), nullable=False)
     tempo_estimado: Mapped[time] = mapped_column(nullable=False)
     cliente: Mapped['Cliente'] = relationship(back_populates='pedido')
+    cozinheiros: Mapped[list['Cozinheiro']] = relationship(secondary='CozinheiroPedido', back_populates='pedidos')
+    associacao_cozinheiro: Mapped[list['CozinheiroPedido']] = relationship(back_populates='pedido')
+    pratos: Mapped[list['Prato']] = relationship(secondary='PedidoPrato', back_populates='pedidos')
+    associacao_prato: Mapped[list['PedidoPrato']] = relationship(back_populates='pedido')
+    cardapios: Mapped[list['Cardapio']] = relationship(secondary='PedidoCardapio', back_populates='pedidos')
+    associacao_cardapio: Mapped[list['PedidoCardapio']] = relationship(back_populates='pedido')
     __table_args__ = (
         CheckConstraint(
             "status IN ('preparando', 'pronto')", #TODO: Ajustar isso
@@ -93,6 +103,8 @@ class Cardapio(db.Model):
     nome: Mapped[str] = mapped_column(String(30), nullable=False)
     tipo: Mapped[str] = mapped_column(String(30), nullable=False)
     prato: Mapped[list['Prato']] = relationship(back_populates='cardapio')
+    pedidos: Mapped[list['Pedido']] = relationship(secondary='PedidoCardapio', back_populates='cardapios')
+    associacao_pedido: Mapped[list['PedidoCardapio']] = relationship(back_populates='cardapio')
 
 class Restaurante(db.Model):
     __tablename__ = 'restaurante'
@@ -101,7 +113,7 @@ class Restaurante(db.Model):
     # TODO: Fazer isso ser derivado
     receita_total: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
     ticket_medio: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
-    
+     
     pedidos_total: Mapped[int] = mapped_column(nullable=False)
     vendas_total: Mapped[int] = mapped_column(nullable=False)
     itens_estoque: Mapped[int] = mapped_column(nullable=False)
@@ -129,11 +141,19 @@ class Prato(db.Model):
     quantidade: Mapped[int] = mapped_column(nullable=False)
     restaurante: Mapped['Restaurante'] = relationship(back_populates='prato')
     cardapio: Mapped['Cardapio'] = relationship(back_populates='prato')
+    pedidos: Mapped[list['Pedido']] = relationship(secondary='PedidoPrato', back_populates='pratos')
+    associacao_pedido: Mapped[list['PedidoPrato']] = relationship(back_populates='prato')
+    ingredientes: Mapped[list['Ingrediente']] = relationship(secondary='PratoIngrediente', back_populates='pratos')
+    associacao_ingrediente: Mapped[list['PratoIngrediente']] = relationship(back_populates='prato')
+    categorias: Mapped[list['Categoria']] = relationship(secondary='PratoCategoria', back_populates='pratos')
+    associacao_categoria: Mapped[list['PratoCategoria']] = relationship(back_populates='prato')
 
 class Categoria(db.Model):
     __tablename__ = 'categoria'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     nome: Mapped[str] = mapped_column(String(30), nullable=False)
+    pratos: Mapped[list['Prato']] = relationship(secondary = 'PratoCategoria', back_populates='categorias')
+    associacao_prato: Mapped[list['PratoCategoria']] = relationship(back_populates = 'categoria')
 
 class Ingrediente(db.Model):
     __tablename__ = 'ingrediente'
@@ -142,6 +162,8 @@ class Ingrediente(db.Model):
     validade: Mapped[date] = mapped_column(nullable=False)
     unidade: Mapped[str] = mapped_column(String(10), nullable=False) # Ex: KG, G, L, ML
     quantidade: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
+    pratos: Mapped[list['Prato']] = relationship(secondary='PratoIngrediente', back_populates='ingredientes')
+    associacao: Mapped[list['PratoIngrediente']] = relationship(back_populates='ingrediente')
 
 class Bancada(db.Model):
     __tablename__ = 'bancada'
@@ -149,6 +171,8 @@ class Bancada(db.Model):
     agendamento: Mapped[list['Agendamento']] = relationship(back_populates='bancada')
     bancada_endereco: Mapped[list['BancadaEndereco']] = relationship(back_populates='bancada')
     bancada_horario_disponivel: Mapped['BancadaHorarioDisponivel'] = relationship(back_populates='bancada')
+    equipamentos: Mapped[list['Equipamento']] = relationship(secondary='BancadaEquipamento', back_populates='bancadas')
+    associacao_equipamento: Mapped[list['BancadaEquipamento']] = relationship(back_populates='bancada')
 
 class BancadaEndereco(db.Model):
     __tablename__ = 'bancada_endereco'
@@ -186,3 +210,55 @@ class Equipamento(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     nome: Mapped[str] = mapped_column(String(30), nullable=False)
     tipo: Mapped[str] = mapped_column(String(30), nullable=False)
+    Bancadas: Mapped[list['Bancada']] = relationship(secondary='BancadaEquipamento', back_populates='equipamentos')
+    associacao_bancada: Mapped[list['BancadaEquipamento']] = relationship(back_populates='equipamento')
+
+class CozinheiroPedido(db.Model):
+    __tablename__ = 'cozinheiro_pedido'
+    id_cozinheiro = Mapped[int] = mapped_column(ForeignKey('cozinheiro.id_usuario'), primary_key = True)
+    id_pedido = Mapped[int] = mapped_column(ForeignKey('pedido.id'), primary_key = True)
+    id_usuario = Mapped[int] = mapped_column(ForeignKey('pedido.id_usuario'), primary_key = True) 
+    cozinheiro: Mapped['Cozinheiro'] = relationship(back_populates = 'associacao_pedido')
+    pedido: Mapped['Pedido'] = relationship(back_populates = 'associacao_cozinheiro')
+
+class BancadaEquipamento(db.Model):
+    __tablename__ = 'bancada_equipamento'
+    id_bancada = Mapped[int] = mapped_column(ForeignKey('bancada.id'), primary_key=True)
+    id_equipamento = Mapped[int] = mapped_column(ForeignKey('equipamento.id'), primary_key=True)
+    qtd = Mapped[int] = mapped_column(nullable = False)
+    bancada: Mapped['Bancada'] = relationship(back_populates = 'associacao_equipamento')
+    equipamento: Mapped['Equipamento'] = relationship(back_populates= 'associoacao_bancada')
+
+class PedidoPrato(db.Model):
+    __tablename__ = 'pedido_prato'
+    id_pedido: Mapped[int] = mapped_column(ForeignKey('pedido.id'), primary_key = True)
+    id_prato: Mapped[int] = mapped_column(ForeignKey('prato.id'), primary_key = True)
+    qtd: Mapped[int] = mapped_column(nullable = False)
+    preco_und: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
+    preco_total = Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
+    pedido: Mapped['Pedido'] = relationship(back_populates = 'associacao_prato')
+    prato: Mapped['Prato'] = relationship(back_populates = 'associacao_pedido')
+
+class PedidoCardapio(db.Model):
+    __tablename__ = 'pedido_cardapio'
+    id_pedido: Mapped[int] = mapped_column(ForeignKey('pedido.id'), primary_key = True)
+    id_cardapio: Mapped[int] = mapped_column(ForeignKey('cardapio.id'), primary_key = True)
+    id_usuario: Mapped[int] = mapped_column(ForeignKey('pedido.id_cliente'), primary_key=True)
+    pedido: Mapped['Pedido'] = relationship(back_populates = 'associacao_cardapio')
+    cardapio: Mapped['Cardapio'] = relationship(back_populates = 'associcao_pedido')
+
+class PratoIngrediente(db.Model):
+    __tablename__ = 'prato_ingrediente'
+    id_prato: Mapped[int] = mapped_column(ForeignKey('prato.id'), primary_key = True)
+    id_ingrediente: Mapped[int] = mapped_column(ForeignKey('ingrediente.id'), primary_key = True)
+    unidade_medida: Mapped[str] = mapped_column(String(20), nullable = False)
+    qtd: Mapped[float] = mapped_column(Numeric(6,2), nullable = False)
+    prato: Mapped['Prato'] = relationship(back_populates = 'associacao_ingrediente')
+    ingrediente: Mapped['Ingrediente'] = relationship(back_populates = 'associacao_prato')
+
+class PratoCategoria(db.Model):
+    __tablename__ = 'prato_categoria'
+    id_prato: Mapped[int] = mapped_column(ForeignKey('prato.id'), primary_key = True)
+    id_categoria: Mapped[int] = mapped_column(ForeignKey('categoria.id'), primary_key = True)
+    prato: Mapped['Prato'] = relationship(back_populates = 'associacao_categoria')
+    cateogoria: Mapped['Categoria'] = relationship(back_populates = 'associacao_prato')

@@ -1,9 +1,13 @@
+import { Banner } from "../Assets/Banner"
+import {CardCardapio} from "../CardCardapio"
 import './Home.css'
 export const Home=()=>{
     return(
-        <>
-            <h1>Home page mais foda do mundo</h1>
-            <p>pintos eretos</p>
+        <>  
+            <Banner/>
+            <h1>Home page</h1>
+            <p>FUTURA HOME PAGE</p>
+            <CardCardapio/>
         </>
     )
 }

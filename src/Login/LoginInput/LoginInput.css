@@ -2,15 +2,13 @@
     display: flex;
     flex-direction: column;
     margin-top: 24px;
+    width: 100%;
+    max-width: 600px;
 }
 
 .loginLabel,.loginInput{
     font-family: poppins;
-    font-weight: 200;
-}
-
-.loginLabel{
-    font-size: 28px;
+    font-weight: 300;
 }
 
 .loginInput{
@@ -20,7 +18,8 @@
     background-color: transparent;
     transition: all 0.35s ease;
     font-size: 20px;
-    width: 600px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .loginInput:focus{
@@ -29,3 +28,6 @@
     color: #4c4747;
 }
 
+.loginInput.error{
+    border-color: #e34343;
+}

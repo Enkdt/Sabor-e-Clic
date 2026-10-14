@@ -1,18 +1,22 @@
 import { useState } from 'react';
-import { LoginImg } from '../Assets/LoginImg';
-import { SignBtn } from '../Assets/SignBtn';
+import { LoginImg } from '../../Assets/LoginImg';
+import { SignBtn } from '../../Assets/SignBtn';
 import { LoginBtn } from '../LoginBtn';
 import { LoginDivider } from '../LoginDivider';
 import { LoginInput } from '../LoginInput';
 import './LoginForm.css';
-import { Banner } from '../Assets/Banner';
+import { Banner } from '../../Assets/Banner';
 import { useNavigate } from 'react-router-dom';
 export const LoginForm=()=>{
-    
+
     const navigate=useNavigate();
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');
     const [error,setError]=useState('');
+
+    const cleanForm=()=>{
+        
+    }
 
     const loginLogic = async (e) => {
         e.preventDefault();
@@ -38,6 +42,7 @@ export const LoginForm=()=>{
         if(response.ok){
             navigate("/");
         }
+        //limpar inputs depois de submeter o login
     }
 
     const inputs=[
@@ -57,24 +62,27 @@ export const LoginForm=()=>{
             onChange: (e) => setPassword(e.target.value)
         }
     ]
-
     return(
         <>
-        <Banner/>
         <div className='loginDiv'>
         <LoginImg/>
-        <form className='loginForm' onSubmit={loginLogic}>
-            <h1 className='loginTitle'>Bem-Vindo</h1>
-            {inputs.map((input)=>(<LoginInput 
+        <form className='loginForm w-full max-w-[800px]' onSubmit={loginLogic}>
+            <h1 className='loginTitle transition-all duration-500 ease text-[44px] md:text-[54px] lg:text-[64px]'>Bem-Vindo</h1>
+            {inputs.map((input)=>(
+                <>
+                <LoginInput 
                 key={input.label}
                 label={input.label} 
                 placeholder={input.placeholder} 
                 type={input.type}
                 value={input.value}
                 onChange={input.onChange}
-                />))}
-            {error && <p className="loginError">{error}</p>}
-            
+                className={error ? "loginInput error" : "loginInput"}
+                />
+                <p style={{opacity: error ? 1:0}} className="loginError">{error?error:"errorPlaceholder"}</p>
+                </>
+                ))}
+                
             <LoginBtn text='Continuar'/>
             <LoginDivider/>
             <SignBtn text='Cadastrar-se'/>

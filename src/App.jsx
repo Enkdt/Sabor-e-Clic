@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import './App.css'
-import { LoginForm } from './LoginForm'
 import { Route, Routes } from 'react-router-dom';
 import { Home } from './Home';
+import { Login } from './Login';
 function App() {
 
   const [currentTime,setCurrentTime] = useState(0);
@@ -28,7 +28,7 @@ function App() {
     <>
     <Routes>
       <Route path='/' element={<Home/>}/>
-      <Route path='/login' element={<LoginForm/>}/>
+      <Route path='/login' element={<Login/>}/>
     </Routes>
     </>
   )

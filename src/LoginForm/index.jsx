@@ -8,7 +8,7 @@ import './LoginForm.css';
 import { Banner } from '../Assets/Banner';
 import { useNavigate } from 'react-router-dom';
 export const LoginForm=()=>{
-    
+    //mudança pro teste commit
     const navigate=useNavigate();
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');

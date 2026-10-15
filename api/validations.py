@@ -6,11 +6,6 @@ def check_email(email: str):
     emailFormat = r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,7}"
     return re.fullmatch(emailFormat,email)
 
-def check_user_exists(email: str):
-    db = get_db();
-    #arrumar isso depois
-    return db.execute("SELECT * FROM test_table WHERE email = ?",(email,)).fetchone()
-
 def check_pwd_strength(pwd: str,usr_imp):
     if not pwd or len(pwd) < 8:
         return False
@@ -32,3 +27,6 @@ def check_cpf(cpf:str) -> bool:
         if targ_digit != int(cpf[i]): 
             return False
     return True
+
+def check_json(data):
+    return isinstance(data, dict)

@@ -4,5 +4,5 @@ from flask_limiter.util import get_remote_address
 
 #Recursos compartilhados,add o resto conforme necessidade
 db = SQLAlchemy()
-limiter = Limiter(key_func=get_remote_address,storage_uri="memory://")
+limiter = Limiter(key_func=get_remote_address)
 

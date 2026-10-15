@@ -13,7 +13,13 @@ class Config:
     FERNET_KEY = os.environ.get("FERNET_KEY")
     INDEX_KEY = os.environ.get("INDEX_KEY")
 
-    #OTHERS
+    #DATABASE
     DATABASE = os.environ.get("DATABASE", str(BASE_DIR / "instance" / "app.db"))
+    SQLALCHEMY_DATABASE_URI = (
+        f"sqlite:///{DATABASE}"
+    )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    #OTHERS
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"

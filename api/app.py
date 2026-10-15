@@ -1,9 +1,10 @@
 #Arquivo para inicialização e reunião do flask
 #TODO: Organizar imports dps e add flask wtf (ADICIONADO), flask jwt extended
 
-import db
 import logging
+import models
 from logging.handlers import RotatingFileHandler
+from sqlalchemy.orm import configure_mappers
 from pathlib import Path
 
 from flask import Flask
@@ -14,7 +15,7 @@ from flask_limiter.errors import RateLimitExceeded
 from utils import err_json
 from config import Config
 from blueprints.auth import auth_bp
-from extensions import limiter
+from extensions import db, limiter
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,11 @@ def create_app():
     limiter.init_app(app)
     Talisman(app)
     CORS(app)
+
+    #database
+    with app.app_context():
+        configure_mappers()
+        db.create_all()
 
     #blueprints, serão adicionadas mais posteriormente
     app.register_blueprint(auth_bp)

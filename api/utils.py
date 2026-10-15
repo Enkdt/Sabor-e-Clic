@@ -19,8 +19,8 @@ def err_json(code, message=None, fields=None, status=400):
     return jsonify(body), status
 
 #Usado para facilitar o unpack do json
-def get_attr(origin,keys):
-    return {k:(data.get(k) or ("")).strip() for k in keys}
+def get_attr(origin, keys):
+    return {k:(origin.get(k) or ("")).strip() for k in keys}
 
 #Mudar posteriormente para uma pasta services, arquivo crypt.py.
 fernet_key = Config.FERNET_KEY
@@ -37,5 +37,5 @@ def cpf_index(cpf:str):
     #retorna uma string do digest gerado encryptado por b64
     return base64.urlsafe_b64encode(digest).decode()
 
-def decrypt_cpf(enc_cpf:string) ->  str:
+def decrypt_cpf(enc_cpf:str) ->  str:
     return fernet.decrypt(enc_cpf.encode()).decode()

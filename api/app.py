@@ -28,7 +28,7 @@ def create_app():
     limiter.init_app(app)
     Talisman(app)
     CORS(app)
-
+    
     #database
     with app.app_context():
         configure_mappers()

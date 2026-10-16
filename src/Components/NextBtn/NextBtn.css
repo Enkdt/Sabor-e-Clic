@@ -1,4 +1,4 @@
-.loginBtn{
+.nextBtn{
     font-family: poppins;
     font-weight: 300;
     background-color: #73980D;
@@ -10,8 +10,10 @@
     font-size: 24px;
     margin: 48px;
     transition: all 0.3s ease;
+    width: 100%;
+    max-width: 400px;
 }
 
-.loginBtn:hover{
+.nextBtn:hover{
     background-color: #506a07;
 }

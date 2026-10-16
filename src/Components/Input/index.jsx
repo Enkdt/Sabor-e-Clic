@@ -1,5 +1,5 @@
-import './LoginInput.css'
-export const LoginInput=({label,placeholder,type,value,onChange,className})=>{
+import './Input.css'
+export const Input=({label,placeholder,type,value,onChange,className})=>{
     return(
         <>
         <div className='loginInputField'>

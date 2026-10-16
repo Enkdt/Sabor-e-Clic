@@ -4,9 +4,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
 from argon2 import PasswordHasher
 
-# TODO: Terminar todas as tabelas
-# TODO: Ligar isso a um banco de dados funcional
-# TODO: Testar 0-0
+# MODELS MOVIDO PARA /models
+# esse arquivo só tá aqui por enquanto para que caso aconteça algo
+# ele possa ser recuperado facilmente
+
 # TODO: Depois ver onde deixar a função get_user, delete_user, etc
 
 class Usuario(db.Model):
@@ -40,7 +41,6 @@ class Cozinheiro(db.Model):
     agendamento: Mapped[list['Agendamento']] = relationship(back_populates='cozinheiro')
     pedidos: Mapped[list['Pedido']] = relationship(secondary='cozinheiro_pedido', back_populates='cozinheiros')
     associacao_pedido: Mapped[list['CozinheiroPedido']] = relationship(back_populates='cozinheiro')
-
 
 class Turno(db.Model):
     __tablename__ = 'turno'

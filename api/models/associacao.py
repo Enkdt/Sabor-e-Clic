@@ -2,10 +2,13 @@ from datetime import datetime, date, time
 from sqlalchemy import CheckConstraint, ForeignKey, String, Numeric, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
-from models.usuario import Cozinheiro
-from models.pedido import Pedido
-from models.restaurante import Prato, Ingrediente, Cardapio, Categoria
-from models.bancada import Bancada, Equipamento
+
+# from .usuario import Cozinheiro
+# from .pedido import Pedido
+# from .restaurante import Prato, Ingrediente, Cardapio, Categoria
+# from .bancada import Bancada, Equipamento
+
+# TODO: Corrigir essas tabelas associativas, estão dando erro '-'
 
 class CozinheiroPedido(db.Model):
     __tablename__ = 'cozinheiro_pedido'

@@ -2,9 +2,11 @@ from datetime import time
 from sqlalchemy import CheckConstraint, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
-from pedido import Pedido
-from bancada import Agendamento
-from associacao import CozinheiroPedido
+from argon2 import PasswordHasher
+
+# from .pedido import Pedido
+# from .bancada import Agendamento
+# from .associacao import CozinheiroPedido
 
 class Usuario(db.Model):
     __tablename__ = 'usuario'
@@ -74,3 +76,30 @@ class ClienteEndereco(db.Model):
     cidade: Mapped[str] = mapped_column(String(45), nullable=False)
     estado: Mapped[str] = mapped_column(String(3), nullable=False) # Estado seria: SP, RJ, MG, etc.
     cliente: Mapped['Cliente'] = relationship(back_populates='endereco')
+
+# Funções
+
+def get_user(email:str):
+    return db.session.execute(db.select(Usuario).where(Usuario.email == email)).scalar_one_or_none()
+
+def create_user(full_name: str,email: str,password: str,cep: str,country: str,street: str,
+number: str,neighborhood: str,city: str,state: str,complement: str | None = None,):
+    
+    if get_user(email) is not None:
+        raise ValueError("Email já está registrado.")
+
+    ph = PasswordHasher()
+    user = Usuario(nome=full_name,email=email,senha_hash=ph.hash(password),)
+    
+    cliente = Cliente(usuario=user)
+    endereco = ClienteEndereco(rua=street,numero=number,complemento=complement,
+    bairro=neighborhood,cidade=city,estado=state,cep=cep,pais=country,)
+    cliente.endereco.append(endereco)
+
+    try:
+        db.session.add(cliente)
+        db.session.commit()
+        return user
+    except Exception:
+        db.session.rollback()
+        raise

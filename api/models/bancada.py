@@ -2,8 +2,9 @@ from datetime import datetime, date, time
 from sqlalchemy import CheckConstraint, ForeignKey, String, Numeric, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
-from usuario import Cozinheiro
-from associacao import BancadaEquipamento
+
+# from .usuario import Cozinheiro
+# from .associacao import BancadaEquipamento
 
 class Agendamento(db.Model): # TODO: Fazer com que não possa ter agendamentos que se sobrepoem
     __tablename__ = 'agendamento'
@@ -44,17 +45,6 @@ class BancadaHorarioDisponivel(db.Model):
     inicio: Mapped[time] = mapped_column(nullable=False)
     fim: Mapped[time] = mapped_column(nullable=False)
     bancada: Mapped['Bancada'] = relationship(back_populates='bancada_horario_disponivel')
-
-class Agendamento(db.Model): # TODO: Fazer com que não possa ter agendamentos que se sobrepoem
-    __tablename__ = 'agendamento'
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    id_cozinheiro: Mapped[int] = mapped_column(ForeignKey('cozinheiro.id_usuario'))
-    id_bancada: Mapped[int] = mapped_column(ForeignKey('bancada.id'))
-    horario_agendado: Mapped[datetime] = mapped_column(nullable=False)
-    tempo_agendado: Mapped[int] = mapped_column(nullable=False)
-    preco_total: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
-    cozinheiro: Mapped['Cozinheiro'] = relationship(back_populates='agendamento')
-    bancada: Mapped['Bancada'] = relationship(back_populates='agendamento')
 
 class Equipamento(db.Model):
     __tablename__ = 'equipamento'

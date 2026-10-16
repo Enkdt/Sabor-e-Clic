@@ -2,7 +2,7 @@
 #TODO: Organizar imports dps e add flask wtf (ADICIONADO), flask jwt extended
 
 import logging
-import models
+# from models import * (nao tamo precisando por enquanto)
 from logging.handlers import RotatingFileHandler
 from sqlalchemy.orm import configure_mappers
 from pathlib import Path

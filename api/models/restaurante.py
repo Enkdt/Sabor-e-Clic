@@ -2,8 +2,9 @@ from datetime import datetime, date, time
 from sqlalchemy import CheckConstraint, ForeignKey, String, Numeric, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
-from pedido import Pedido
-from associacao import PedidoCardapio, PedidoPrato, PratoIngrediente, PratoCategoria
+
+# from .pedido import Pedido
+# from .associacao import PedidoCardapio, PedidoPrato, PratoIngrediente, PratoCategoria
 
 class Cardapio(db.Model):
     __tablename__ = 'cardapio'

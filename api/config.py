@@ -13,8 +13,13 @@ class Config:
     FERNET_KEY = os.environ.get("FERNET_KEY")
     INDEX_KEY = os.environ.get("INDEX_KEY")
 
-    #DATABASE
-    DATABASE = os.environ.get("DATABASE", str(BASE_DIR / "instance" / "app.db"))
+    # DATABASE
+    DATABASE = Path(
+        os.environ.get("DATABASE", str(BASE_DIR / "instances" / "app.db"))
+    ).expanduser().resolve() # Normaliza o caminho
+
+    DATABASE.parent.mkdir(parents=True, exist_ok=True) # Cria certinho a pasta caso ela não exista
+
     SQLALCHEMY_DATABASE_URI = (
         f"sqlite:///{DATABASE}"
     )

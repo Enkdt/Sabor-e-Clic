@@ -10,7 +10,8 @@ from argon2.exceptions import VerifyMismatchError
 from flask import Blueprint, request, jsonify
 from utils import err_json, get_attr
 from extensions import limiter
-from models import get_user,create_user
+from models.usuario import get_user, create_user
+
 
 logger = logging.getLogger(__name__)
 auth_bp = Blueprint("auth",__name__,url_prefix="/api")

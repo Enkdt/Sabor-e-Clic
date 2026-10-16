@@ -22,6 +22,7 @@ dist-ssr
 
 # api instances
 api/instance/*
+api/instances/*
 
 # python ignores
 __pycache__/

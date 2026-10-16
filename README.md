@@ -10,6 +10,7 @@
   </details>
 </div>
 
+---
 
 ---
 
@@ -41,6 +42,8 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
   <img src="https://skillicons.dev/icons?i=figma,mysql" alt="https://skillicons.dev"/>
 
 </p>
+
+---
 
 ---
 

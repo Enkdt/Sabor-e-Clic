@@ -1,7 +1,8 @@
 #Arquivo para inicialização e reunião do flask
-#TODO: Organizar imports dps e add flask wtf (ADICIONADO), flask jwt extended
+#TODO: Organizar imports dps e add flask jwt extended
 
 import logging
+import models
 # from models import * (nao tamo precisando por enquanto)
 from logging.handlers import RotatingFileHandler
 from sqlalchemy.orm import configure_mappers
@@ -32,7 +33,9 @@ def create_app():
     #database
     with app.app_context():
         configure_mappers()
+        print("SQLALchemy working")
         db.create_all()
+        print("Db working")
 
     #blueprints, serão adicionadas mais posteriormente
     app.register_blueprint(auth_bp)

@@ -1,3 +1,4 @@
+#TODO Depois add redis server pra quando for lançar
 #Arquivo relacionado à configuração do ambiente
 import os
 from pathlib import Path
@@ -20,11 +21,15 @@ class Config:
 
     DATABASE.parent.mkdir(parents=True, exist_ok=True) # Cria certinho a pasta caso ela não exista
 
-    SQLALCHEMY_DATABASE_URI = (
-        f"sqlite:///{DATABASE}"
-    )
+    SQLALCHEMY_DATABASE_URI = f"sqlite:///{DATABASE}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     #OTHERS
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
+
+    #Trocar isso dps pro redis
+    RATELIMIT_STORAGE_URI = os.environ.get(
+        "RATELIMIT_STORAGE_URI",
+        "memory://"
+    )

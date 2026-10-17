@@ -11,15 +11,12 @@ class Pedido(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     id_cliente: Mapped[int] = mapped_column(ForeignKey('cliente.id_usuario'))
     data: Mapped[date] = mapped_column(nullable=False)
-    total: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
+    total:  Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False)
     tempo_estimado: Mapped[int] = mapped_column(nullable=False)
     cliente: Mapped['Cliente'] = relationship(back_populates='pedido')
-    cozinheiros: Mapped[list['Cozinheiro']] = relationship(secondary='cozinheiro_pedido', back_populates='pedidos')
     associacao_cozinheiro: Mapped[list['CozinheiroPedido']] = relationship(back_populates='pedido')
-    pratos: Mapped[list['Prato']] = relationship(secondary='pedido_prato', back_populates='pedidos')
     associacao_prato: Mapped[list['PedidoPrato']] = relationship(back_populates='pedido')
-    cardapios: Mapped[list['Cardapio']] = relationship(secondary='pedido_cardapio', back_populates='pedidos')
     associacao_cardapio: Mapped[list['PedidoCardapio']] = relationship(back_populates='pedido')
     __table_args__ = (
         CheckConstraint(

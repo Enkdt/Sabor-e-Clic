@@ -12,7 +12,6 @@ class Cardapio(db.Model):
     nome: Mapped[str] = mapped_column(String(30), nullable=False)
     tipo: Mapped[str] = mapped_column(String(30), nullable=False)
     prato: Mapped[list['Prato']] = relationship(back_populates='cardapio')
-    pedidos: Mapped[list['Pedido']] = relationship(secondary='pedido_cardapio', back_populates='cardapios')
     associacao_pedido: Mapped[list['PedidoCardapio']] = relationship(back_populates='cardapio')
 
 class Restaurante(db.Model):
@@ -50,18 +49,14 @@ class Prato(db.Model):
     quantidade: Mapped[int] = mapped_column(nullable=False)
     restaurante: Mapped['Restaurante'] = relationship(back_populates='prato')
     cardapio: Mapped['Cardapio'] = relationship(back_populates='prato')
-    pedidos: Mapped[list['Pedido']] = relationship(secondary='pedido_prato', back_populates='pratos')
     associacao_pedido: Mapped[list['PedidoPrato']] = relationship(back_populates='prato')
-    ingredientes: Mapped[list['Ingrediente']] = relationship(secondary='prato_ingrediente', back_populates='pratos')
     associacao_ingrediente: Mapped[list['PratoIngrediente']] = relationship(back_populates='prato')
-    categorias: Mapped[list['Categoria']] = relationship(secondary='prato_categoria', back_populates='pratos')
     associacao_categoria: Mapped[list['PratoCategoria']] = relationship(back_populates='prato')
 
 class Categoria(db.Model):
     __tablename__ = 'categoria'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     nome: Mapped[str] = mapped_column(String(30), nullable=False)
-    pratos: Mapped[list['Prato']] = relationship(secondary = 'prato_categoria', back_populates='categorias')
     associacao_prato: Mapped[list['PratoCategoria']] = relationship(back_populates = 'categoria')
 
 class Ingrediente(db.Model):
@@ -71,5 +66,4 @@ class Ingrediente(db.Model):
     validade: Mapped[date] = mapped_column(nullable=False)
     unidade: Mapped[str] = mapped_column(String(10), nullable=False) # Ex: KG, G, L, ML
     quantidade: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
-    pratos: Mapped[list['Prato']] = relationship(secondary='prato_ingrediente', back_populates='ingredientes')
     associacao: Mapped[list['PratoIngrediente']] = relationship(back_populates='ingrediente')

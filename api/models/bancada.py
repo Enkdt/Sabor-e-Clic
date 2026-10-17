@@ -23,7 +23,6 @@ class Bancada(db.Model):
     agendamento: Mapped[list['Agendamento']] = relationship(back_populates='bancada')
     bancada_endereco: Mapped[list['BancadaEndereco']] = relationship(back_populates='bancada')
     bancada_horario_disponivel: Mapped[list['BancadaHorarioDisponivel']] = relationship(back_populates='bancada',cascade='all, delete-orphan')
-    equipamentos: Mapped[list['Equipamento']] = relationship(secondary='bancada_equipamento', back_populates='bancadas')
     associacao_equipamento: Mapped[list['BancadaEquipamento']] = relationship(back_populates='bancada')
 
 class BancadaEndereco(db.Model):
@@ -51,5 +50,4 @@ class Equipamento(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     nome: Mapped[str] = mapped_column(String(30), nullable=False)
     tipo: Mapped[str] = mapped_column(String(30), nullable=False)
-    bancadas: Mapped[list['Bancada']] = relationship(secondary='bancada_equipamento', back_populates='equipamentos')
     associacao_bancada: Mapped[list['BancadaEquipamento']] = relationship(back_populates='equipamento')

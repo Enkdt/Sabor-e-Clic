@@ -37,7 +37,6 @@ class Cozinheiro(db.Model):
     usuario: Mapped['Usuario'] = relationship(back_populates='cozinheiro')
     turno: Mapped[list['Turno']] = relationship(back_populates='cozinheiro', cascade='all, delete-orphan')
     agendamento: Mapped[list['Agendamento']] = relationship(back_populates='cozinheiro')
-    pedidos: Mapped[list['Pedido']] = relationship(secondary='cozinheiro_pedido', back_populates='cozinheiros')
     associacao_pedido: Mapped[list['CozinheiroPedido']] = relationship(back_populates='cozinheiro')
 
 

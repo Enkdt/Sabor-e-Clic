@@ -1,18 +1,22 @@
 import { useState } from 'react';
-import { LoginImg } from '../Assets/LoginImg';
-import { SignBtn } from '../Assets/SignBtn';
-import { LoginBtn } from '../LoginBtn';
+import { LoginImg } from '../../Assets/LoginImg';
+import { SignBtn } from '../../Assets/SignBtn';
+import { NextBtn } from '../../Components/NextBtn';
 import { LoginDivider } from '../LoginDivider';
-import { LoginInput } from '../LoginInput';
+import { Input } from '../../Components/Input';
 import './LoginForm.css';
-import { Banner } from '../Assets/Banner';
-import { useNavigate } from 'react-router-dom';
+import { Banner } from '../../Assets/Banner';
+import { NavLink, useNavigate } from 'react-router-dom';
 export const LoginForm=()=>{
     //mudança pro teste commit
     const navigate=useNavigate();
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');
     const [error,setError]=useState('');
+
+    const cleanForm=()=>{
+        
+    }
 
     const loginLogic = async (e) => {
         e.preventDefault();
@@ -38,12 +42,13 @@ export const LoginForm=()=>{
         if(response.ok){
             navigate("/");
         }
+        //limpar inputs depois de submeter o login
     }
 
     const inputs=[
         {
             label:"E-mail",
-            placeholder:"Insira o seu e-mail",
+            placeholder:"exemplo@email.com",
             type:"text",
             value: email,
             onChange: (e) => setEmail(e.target.value)
@@ -58,28 +63,39 @@ export const LoginForm=()=>{
         }
     ]
 
-    return(
-        <>
-        <Banner/>
-        <div className='loginDiv'>
+return (
+    <div className="loginDiv">
         <LoginImg/>
-        <form className='loginForm' onSubmit={loginLogic}>
-            <h1 className='loginTitle'>Bem-Vindo</h1>
-            {inputs.map((input)=>(<LoginInput 
-                key={input.label}
-                label={input.label} 
-                placeholder={input.placeholder} 
-                type={input.type}
-                value={input.value}
-                onChange={input.onChange}
-                />))}
-            {error && <p className="loginError">{error}</p>}
-            
-            <LoginBtn text='Continuar'/>
+
+        <div className="loginForm w-full max-w-[800px]">
+            <form onSubmit={loginLogic}>
+                <h1 className="loginTitle transition-all duration-500 ease text-[44px] md:text-[54px] lg:text-[64px]">Bem-Vindo de volta!</h1>
+
+                {inputs.map((input) => (
+                    <div key={input.label}>
+                        <Input
+                            label={input.label}
+                            placeholder={input.placeholder}
+                            type={input.type}
+                            value={input.value}
+                            onChange={input.onChange}
+                            className={error ? "loginInput error" : "loginInput"}
+                        />
+
+                        <p style={{ opacity: error ? 1 : 0 }} className="loginError">
+                            {error || "errorPlaceholder"}
+                        </p>
+                    </div>
+                ))}
+                <NextBtn text="Continuar"/>
+            </form>
+
             <LoginDivider/>
-            <SignBtn text='Cadastrar-se'/>
-        </form>
+            <NavLink to="/cadastro">
+                <SignBtn text="Cadastrar-se"/>
+            </NavLink>
         </div>
-        </>
-    )
+    </div>
+);
+
 }

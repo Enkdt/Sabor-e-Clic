@@ -11,6 +11,7 @@
     "api": "cd api && .venv/bin/flask run --no-debugger"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
     "@tailwindcss/cli": "^4.3.3",
     "react": "^19.2.8",
     "react-country-state-city": "^1.1.13",

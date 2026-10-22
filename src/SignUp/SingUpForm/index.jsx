@@ -3,7 +3,11 @@ import { AddressSelect } from '../../Components/AddressSelect'
 import { Input } from '../../Components/Input'
 import { NextBtn } from '../../Components/NextBtn'
 import './SignUpForm.css'
+import { NavLink, useNavigate } from 'react-router-dom';
+import { CheckCircleIcon, CheckFatIcon, CheckIcon } from '@phosphor-icons/react'
 export const SignUpForm=()=>{
+
+    const navigate=useNavigate();
 
     const [nome,setNome]=useState('');
     const [sobrenome,setSobrenome]=useState('');
@@ -13,6 +17,18 @@ export const SignUpForm=()=>{
     const [comp,setComp]=useState('');
     const [senha,setSenha]=useState('');
     const [confSenha,setConfSenha]=useState('');
+    const [endereco, setEndereco] = useState({
+    country: null,
+    state: null,
+    city: null
+    });
+
+    const tem8Caracteres = senha.length >= 8;
+    const temMaiuscula = /[A-Z]/.test(senha);
+    const temMinuscula = /[a-z]/.test(senha);
+    const temEspecial = /[^A-Za-z0-9]/.test(senha);
+
+    const senhasCoincidem= senha === confSenha;
 
     const inputs=[
         {
@@ -38,13 +54,49 @@ export const SignUpForm=()=>{
         }
     ]
 
-    const sendSignUp=(e)=>{
+    const [error, setError] = useState('');
+  
+    const sendSignUp = async (e) => {
         e.preventDefault();
-        console.log(`Formulário Enviado - Dados
-            =======================
-            ${nome}
-            ${sobrenome}`)
-    }
+
+        try {
+            const response = await fetch('/api/cadastro', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: nome,
+                    surname: sobrenome,
+                    email: email,
+                    password: senha,
+                    password_confirmation: confSenha,
+                    cep:null,
+                    country: endereco.country.name,
+                    state: endereco.state.name,
+                    city: endereco.city.name,
+                    street: rua,
+                    number: num,
+                    extra: comp,
+                })
+            });
+
+            const data = await response.json();
+
+            console.log(data);
+
+            if (!response.ok) {
+                setError(data.error.message);
+                return;
+            }
+
+            navigate('/');
+
+        } catch(error){
+            //teste
+            setError('Não foi possível conectar ao servidor.');
+        }
+    };
 
     return(
         <div className='signupForm'>
@@ -64,16 +116,34 @@ export const SignUpForm=()=>{
                                 </div>
                             ))}
             <label className='addressLabel'>Endereço</label>
-            <AddressSelect/>
+            <AddressSelect onAddressChange={setEndereco}/>
             <Input label="Rua" placeholder="Ex: Rua Augusta" type="text" className="loginInput" onChange={(e) => setRua(e.target.value)}/>
             <div className='divNumComp'>
                 <Input label="Número" placeholder="Ex: 120" type="text" className="loginInput" onChange={(e) => setNum(e.target.value)}/>
                 <Input label="Complemento" placeholder="Ex: apto 13" type="text" className="loginInput" onChange={(e) => setComp(e.target.value)}/>
             </div>
                 <Input label="Senha" placeholder="Crie sua senha" type="password" className="loginInput" onChange={(e) => setSenha(e.target.value)}/>
+                <p className='ReqP'>Sua senha deve conter ao mínimo:</p>
+                <ul className='pwdReq'>
+                    <div className={senha.length===0 ? '' : tem8Caracteres ? 'valido' : 'invalido'}>
+                        <CheckCircleIcon weight='fill' className='checkIcon'/><li>8 caracteres</li>
+                    </div>
+                    <div className={senha.length===0 ? '' : temMaiuscula && temMinuscula ? 'valido' : 'invalido'}>
+                        <CheckCircleIcon weight='fill' className='checkIcon'/><li>1 letra maíuscula e minúscula</li>
+                    </div>
+                    <div className={senha.length===0 ? '' : temEspecial ? 'valido' : 'invalido'}>
+                        <CheckCircleIcon weight='fill' className='checkIcon'/><li>1 caractere especial</li>
+                    </div>
+                </ul>
                 <Input label="Confirmação Senha" placeholder="Repita a senha criada" type="password" className="loginInput" onChange={(e) => setConfSenha(e.target.value)}/>
+                <span className={confSenha.length===0? 'confNeutro' : senhasCoincidem ? 'confNeutro' : 'confInvalido'}>As senhas não coincidem!</span>
                 <NextBtn text="Criar Conta"/>
             </form>
+                {error && (
+    <p className="signupError">
+        {error}
+    </p>
+    )}
         </div>
     )
 }

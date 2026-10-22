@@ -1,0 +1,12 @@
+.divPrato{
+    overflow: hidden;
+    width: 400px;
+    height: 260px;
+}
+
+
+.pratoCardapio{
+    width: 400px;
+    height: 260px;
+    transition: all 0.45s ease;
+}

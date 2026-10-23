@@ -1,0 +1,16 @@
+.SignBtn{
+    font-family: poppins;
+    font-weight: 300;
+    color: #73980D;
+    border: none;
+    background-color: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 24px;
+    margin: 48px;
+    transition: all 0.3s ease;
+}
+
+.SignBtn:hover{
+    color: #506a07;
+}

@@ -3,9 +3,11 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from flask_mail import Mail
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(dotenv_path=BASE_DIR / '.env')
+mail = Mail()
 
 #Configuração geral e setup do ambiente
 class Config:
@@ -27,6 +29,16 @@ class Config:
     #OTHERS
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
+
+    #MAIL
+
+    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT'))
+    MAIL_USE_TLS = bool(int(os.environ.get('MAIL_USE_TLS')))
+    MAIL_USE_SSL = bool(int(os.environ.get('MAIL_USE_SSL')))
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')
 
     #Trocar isso dps pro redis
     RATELIMIT_STORAGE_URI = os.environ.get(

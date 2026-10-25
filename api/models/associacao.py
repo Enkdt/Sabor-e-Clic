@@ -8,8 +8,6 @@ from extensions import db
 # from .restaurante import Prato, Ingrediente, Cardapio, Categoria
 # from .bancada import Bancada, Equipamento
 
-# TODO: Corrigir essas tabelas associativas, estão dando erro '-'
-
 class CozinheiroPedido(db.Model):
     __tablename__ = 'cozinheiro_pedido'
     id_cozinheiro: Mapped[int] = mapped_column(ForeignKey('cozinheiro.id_usuario'), primary_key = True)

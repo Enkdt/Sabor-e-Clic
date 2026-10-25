@@ -43,7 +43,7 @@ class Cozinheiro(db.Model):
 class Turno(db.Model):
     __tablename__ = 'turno'
     id_cozinheiro: Mapped[int] = mapped_column(ForeignKey('cozinheiro.id_usuario'), primary_key=True)
-    id_turno: Mapped[int] = mapped_column(primary_key=True)
+    id_turno: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     inicio: Mapped[time] = mapped_column(nullable=False)
     fim: Mapped[time] = mapped_column(nullable=False)
     periodo: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -65,7 +65,7 @@ class Cliente(db.Model):
 class ClienteEndereco(db.Model):
     __tablename__ = 'cliente_endereco'
     id_usuario: Mapped[int] = mapped_column(ForeignKey('cliente.id_usuario'),nullable=False)
-    id: Mapped[int] = mapped_column(primary_key=True,autoincrement=True) # numero que difere ele de outros enderecos
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True) # numero que difere ele de outros enderecos
     rua: Mapped[str] = mapped_column(String(45), nullable=False)
     numero: Mapped[str] = mapped_column(String(5), nullable=False)
     complemento: Mapped[str| None] = mapped_column(String(45),nullable=True)
@@ -78,27 +78,27 @@ class ClienteEndereco(db.Model):
 
 # Funções
 
-def get_user(email:str):
-    return db.session.execute(db.select(Usuario).where(Usuario.email == email)).scalar_one_or_none()
+# def get_user(email:str):
+#     return db.session.execute(db.select(Usuario).where(Usuario.email == email)).scalar_one_or_none()
 
-def create_user(full_name: str,email: str,password: str,cep: str,country: str,street: str,
-number: str,neighborhood: str,city: str,state: str,complement: str | None = None,):
+# def create_user(full_name: str,email: str,password: str,cep: str,country: str,street: str,
+# number: str,neighborhood: str,city: str,state: str,complement: str | None = None,):
     
-    if get_user(email) is not None:
-        raise ValueError("Email já está registrado.")
+#     if get_user(email) is not None:
+#         raise ValueError("Email já está registrado.")
 
-    ph = PasswordHasher()
-    user = Usuario(nome=full_name,email=email,senha_hash=ph.hash(password),)
+#     ph = PasswordHasher()
+#     user = Usuario(nome=full_name,email=email,senha_hash=ph.hash(password),)
     
-    cliente = Cliente(usuario=user)
-    endereco = ClienteEndereco(rua=street,numero=number,complemento=complement,
-    bairro=neighborhood,cidade=city,estado=state,cep=cep,pais=country,)
-    cliente.endereco.append(endereco)
+#     cliente = Cliente(usuario=user)
+#     endereco = ClienteEndereco(rua=street,numero=number,complemento=complement,
+#     bairro=neighborhood,cidade=city,estado=state,cep=cep,pais=country,)
+#     cliente.endereco.append(endereco)
 
-    try:
-        db.session.add(cliente)
-        db.session.commit()
-        return user
-    except Exception:
-        db.session.rollback()
-        raise
+#     try:
+#         db.session.add(cliente)
+#         db.session.commit()
+#         return user
+#     except Exception:
+#         db.session.rollback()
+#         raise

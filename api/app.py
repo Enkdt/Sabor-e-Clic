@@ -14,7 +14,7 @@ from flask_cors import CORS
 from flask_limiter.errors import RateLimitExceeded
 
 from utils import err_json
-from config import Config
+from config import Config, mail
 from blueprints.auth import auth_bp
 from extensions import db, limiter
 
@@ -29,6 +29,9 @@ def create_app():
     limiter.init_app(app)
     Talisman(app)
     CORS(app)
+    
+    #mail
+    mail.init_app(app) 
     
     #database
     with app.app_context():

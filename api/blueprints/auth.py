@@ -1,5 +1,6 @@
 #Arquivo às blueprints de autenticação 
 #TODO: Inserir função de recuperar conta (email), Inserir login por oAuth (google), Adicionar MFA
+#TODO: inserir flaskJWT para validar a sessão
 
 import validations as val
 import logging
@@ -176,4 +177,8 @@ def cadastro():
         "user": {"email": user.email}
     }), 201        
 
+@auth_bp.route('/cadastro/validar', methods=["POST"])
+def validar():
+    
+    pass
 

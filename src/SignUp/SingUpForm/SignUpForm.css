@@ -53,3 +53,52 @@
     display: flex;
     gap: 16px;
 }
+
+.ReqP{
+    color: #7b7b7b;
+    font-family: Poppins;
+    font-weight: 500;
+}
+
+.pwdReq{
+    font-family: Poppins;
+}
+
+.pwdReq li, .checkIcon{
+    color: #7b7b7b;
+}
+
+.pwdReq div{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pwdReq div *{
+    transition: all 0.2s ease;
+}
+
+.pwdReq .valido li, .pwdReq .valido .checkIcon{
+    color: #158007;
+}
+
+.pwdReq .invalido li, .pwdReq .invalido .checkIcon{
+    color: #bd1534;
+}
+
+.confNeutro{
+    font-size: 18px;
+    margin-top: 12px;
+    opacity: 0;
+    transition: all 0.1s ease;
+    font-family: Poppins;
+}
+
+.confInvalido{
+    font-size: 18px;
+    margin-top: 12px;
+    transition: all 0.2s ease;
+    opacity: 1;
+    color: #bd1534;
+    font-family: Poppins;
+}

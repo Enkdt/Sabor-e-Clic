@@ -5,10 +5,9 @@ import { NextBtn } from '../../Components/NextBtn';
 import { LoginDivider } from '../LoginDivider';
 import { Input } from '../../Components/Input';
 import './LoginForm.css';
-import { Banner } from '../../Assets/Banner';
 import { NavLink, useNavigate } from 'react-router-dom';
 export const LoginForm=()=>{
-    //mudança pro teste commit
+
     const navigate=useNavigate();
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');

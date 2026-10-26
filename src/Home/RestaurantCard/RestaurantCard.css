@@ -1,0 +1,47 @@
+.restaurantCard{
+    background-color: #eee8e2;
+    max-width: 420px;
+    width: 100%;
+    max-height: 100px;
+    height: 100%;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    gap: 12px;
+
+}
+
+.restaurantCard .restaurantIcon{
+    display: block;
+    border-radius: 50%;
+    background-color: #73980d;
+    width: 84px;
+    height: 84px;
+}
+
+.restaurantCard .restaurantInfo .restaurantName{
+    font-family: Poppins;
+}
+
+.restaurantCard .restaurantInfo .restaurantTags{
+    display: flex;
+    gap: 8px;
+    font-family: Poppins;
+    font-weight: 300;
+    font-style: italic;
+    color: #787571;
+    font-size: 14px;
+}
+
+.restaurantCard .restaurantFavIcon{
+    padding: 0;
+    margin-left: auto;
+    align-self: flex-start;
+    color: #c4bcb2;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.restaurantCard .restaurantFavIcon.activated{
+    color: #73980d;
+}

@@ -1,0 +1,28 @@
+
+.ad1 {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: 1390px;
+    height: auto;
+    margin: 24px auto;
+    overflow: hidden;
+}
+
+.ad1img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.ad1txt {
+    position: absolute;
+    top: 50%;
+    left: 26px;
+    transform: translateY(-50%);
+    max-width: 110px;
+    color: white;
+    font-family: Poppins;
+    font-weight: 600;
+    line-height: 2;
+}

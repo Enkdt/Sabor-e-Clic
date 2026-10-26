@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { LoginImg } from '../../Assets/LoginImg';
-import { SignBtn } from '../../Assets/SignBtn';
+import { SignBtn } from '../../Components/SignBtn';
 import { NextBtn } from '../../Components/NextBtn';
 import { LoginDivider } from '../LoginDivider';
 import { Input } from '../../Components/Input';

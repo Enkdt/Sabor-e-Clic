@@ -2,7 +2,6 @@ from datetime import time
 from sqlalchemy import CheckConstraint, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
-from argon2 import PasswordHasher
 
 # from .pedido import Pedido
 # from .bancada import Agendamento
@@ -14,6 +13,7 @@ class Usuario(db.Model):
     nome: Mapped[str] = mapped_column(String(120), nullable=False)
     email: Mapped[str] = mapped_column(String(90), unique=True, nullable=False)
     senha_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    email_verificado: Mapped[bool] = mapped_column(nullable=False, default=False)
     funcionario: Mapped['Funcionario | None'] = relationship(back_populates='usuario')
     cozinheiro: Mapped['Cozinheiro | None'] = relationship(back_populates='usuario')
     cliente: Mapped['Cliente | None'] = relationship(back_populates='usuario')
@@ -42,8 +42,8 @@ class Cozinheiro(db.Model):
 
 class Turno(db.Model):
     __tablename__ = 'turno'
-    id_cozinheiro: Mapped[int] = mapped_column(ForeignKey('cozinheiro.id_usuario'), primary_key=True)
     id_turno: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id_cozinheiro: Mapped[int] = mapped_column(ForeignKey('cozinheiro.id_usuario'), nullable=False)
     inicio: Mapped[time] = mapped_column(nullable=False)
     fim: Mapped[time] = mapped_column(nullable=False)
     periodo: Mapped[str] = mapped_column(String(20), nullable=False)

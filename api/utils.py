@@ -78,9 +78,10 @@ def sendEmail(Subject:str,recipient:str,content:str,HTMLcontent:str):
     message.html = HTMLcontent
     mail.send(message)
 
-def sendAuthEmail(recipient:str, token:str):
+def sendAuthEmail(recipient:str):
     #Trocar a url depois em produção
-    verificationLink = f"http://localhost:5173/cadastro/autenticar?{token}"
+    token = generateToken(recipient,"user validation",15)
+    verificationLink = f"http://localhost:5173/cadastro/autenticar?token={token}"
     subject = "Valide a criação da conta no serviço Sabor&Clic"
     content = f'Valide seu email clicando neste link: {verificationLink}'
     htmlContent = render_template_string('''

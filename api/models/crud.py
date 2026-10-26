@@ -12,7 +12,7 @@ class CRUD:
         @staticmethod
         def funcionario(nome:str, email:str, senha:str, nivel_permissao:int):
             try:
-                user = Usuario(nome=nome, email=email, senha_hash=ph.hash(senha))
+                user = Usuario(nome=nome, email=email, senha_hash=ph.hash(senha),email_verificado=False)
                 func = Funcionario(nivel_permissao=nivel_permissao, usuario=user)
                 db.session.add(func)
                 db.session.commit()
@@ -25,7 +25,7 @@ class CRUD:
         @staticmethod
         def cozinheiro(nome:str, email:str, senha:str, especialidade:str):
             try:
-                user = Usuario(nome=nome, email=email, senha_hash=ph.hash(senha))
+                user = Usuario(nome=nome, email=email, senha_hash=ph.hash(senha),email_verificado=False)
                 cozi = Cozinheiro(usuario=user, especialidade=especialidade)
                 db.session.add(cozi)
                 db.session.commit()
@@ -48,7 +48,7 @@ class CRUD:
         @staticmethod
         def cliente(nome:str, email:str, senha:str):
             try:
-                user = Usuario(nome=nome, email=email, senha_hash=ph.hash(senha))
+                user = Usuario(nome=nome, email=email, senha_hash=ph.hash(senha),email_verificado=False)
                 clie = Cliente(usuario=user)
                 db.session.add(clie)
                 db.session.commit()
@@ -60,7 +60,7 @@ class CRUD:
         @staticmethod
         def clienteEndereco(id_cliente:int, rua:str, numero:str, cep:str, pais:str, estado:str, cidade:str, bairro:str, complemento:str = None):
             try:
-                ende = ClienteEndereco(id_cliente=id_cliente, rua=rua, numero=numero, complemento = complemento, cep=cep, pais=pais, estado=estado, cidade=cidade, bairro=bairro)
+                ende = ClienteEndereco(id_usuario=id_cliente, rua=rua, numero=numero, complemento = complemento, cep=cep, pais=pais, estado=estado, cidade=cidade, bairro=bairro)
                 db.session.add(ende)
                 db.session.commit()
                 return ende
@@ -77,7 +77,13 @@ class CRUD:
         # associacao.py (não tenho certeza se precisamos)
 
     class read:
-        pass
+        def cliente(email:str):
+            try:
+                clie = db.select(Usuario).where(Usuario.email == email)
+                return db.session.execute(clie).scalar_one_or_none()
+            except Exception:
+                db.session.rollback()
+                raise    
     class update:
         pass
     class delete:

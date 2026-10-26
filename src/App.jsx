@@ -9,6 +9,7 @@ import { Bancada } from './Bancada';
 import { Estoque } from './Estoque';
 import { AdcEstoque } from './AdcEstoque';
 import { Carrinho } from './Carrinho';
+import { EmailVerification } from './EmailVerification';
 function App() {
  return (
     <>
@@ -16,6 +17,7 @@ function App() {
       <Route path='/' element={<Home/>}/>
       <Route path='/login' element={<Login/>}/>
       <Route path='/cadastro' element={<SignUp/>}/>
+      <Route path='/cadastro/autenticar' element={<EmailVerification/>}/>
       <Route path='/AgdBancada' element={<AgdBancada/>}/>
       <Route path='/Bancada' element={<Bancada/>}/>
       <Route path='/Estoque' element={<Estoque/>}/>

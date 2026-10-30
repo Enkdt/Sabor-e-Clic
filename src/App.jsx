@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import './App.css'
 import { Route, Routes } from 'react-router-dom';
 import { Home } from './Home';
@@ -10,9 +9,11 @@ import { Estoque } from './Estoque';
 import { AdcEstoque } from './AdcEstoque';
 import { Carrinho } from './Carrinho';
 import { EmailVerification } from './EmailVerification';
+import { AuthProvider } from './AuthContext';
+
 function App() {
  return (
-    <>
+    <AuthProvider>
     <Routes>
       <Route path='/' element={<Home/>}/>
       <Route path='/login' element={<Login/>}/>
@@ -24,7 +25,7 @@ function App() {
       <Route path='/AdcEstoque' element={<AdcEstoque/>}/>
       <Route path='/Carrinho' element={<Carrinho/>}/>
     </Routes>
-    </>
+    </AuthProvider>
   )
 
 }

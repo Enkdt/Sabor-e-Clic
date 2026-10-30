@@ -1,10 +1,13 @@
-from datetime import datetime, date, time
-from sqlalchemy import CheckConstraint, ForeignKey, String, Numeric, UniqueConstraint
+from datetime import date
+from sqlalchemy import ForeignKey, String, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
 
-# from .pedido import Pedido
-# from .associacao import PedidoCardapio, PedidoPrato, PratoIngrediente, PratoCategoria
+restaurante_categoria = db.Table(
+    'restaurante_categoria',
+    db.Column('id_restaurante', ForeignKey('restaurante.id'), primary_key=True),
+    db.Column('id_categoria', ForeignKey('categoria.id'), primary_key=True),
+)
 
 class Cardapio(db.Model):
     __tablename__ = 'cardapio'
@@ -18,13 +21,12 @@ class Restaurante(db.Model):
     __tablename__ = 'restaurante'
     id: Mapped[int] = mapped_column(primary_key=True)
     nome: Mapped[str] = mapped_column(String(30), nullable=False)
-    # TODO: Fazer isso ser derivado
-    receita_total: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
-    ticket_medio: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
-     
-    pedidos_total: Mapped[int] = mapped_column(nullable=False)
-    vendas_total: Mapped[int] = mapped_column(nullable=False)
-    itens_estoque: Mapped[int] = mapped_column(nullable=False)
+    receita_total: Mapped[float] = mapped_column(Numeric(10,2), nullable=False, default=0)
+    ticket_medio: Mapped[float] = mapped_column(Numeric(10,2), nullable=False, default=0)
+    pedidos_total: Mapped[int] = mapped_column(nullable=False, default=0)
+    vendas_total: Mapped[int] = mapped_column(nullable=False, default=0)
+    itens_estoque: Mapped[int] = mapped_column(nullable=False, default=0)
+    categorias: Mapped[list['Categoria']] = relationship(secondary=restaurante_categoria, back_populates='restaurantes')
     prato: Mapped[list['Prato']] = relationship(back_populates='restaurante')
     restaurante_endereco: Mapped[list['RestauranteEndereco']] = relationship(back_populates='restaurante')
 
@@ -53,11 +55,13 @@ class Prato(db.Model):
     associacao_ingrediente: Mapped[list['PratoIngrediente']] = relationship(back_populates='prato')
     associacao_categoria: Mapped[list['PratoCategoria']] = relationship(back_populates='prato')
 
+# Restaurante e pratos usam as mesmas categorias, ver dps se compensa separar em categoriaPrato e categoriaRestaurante
 class Categoria(db.Model):
     __tablename__ = 'categoria'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     nome: Mapped[str] = mapped_column(String(30), nullable=False)
     associacao_prato: Mapped[list['PratoCategoria']] = relationship(back_populates = 'categoria')
+    restaurantes: Mapped[list['Restaurante']] = relationship(secondary=restaurante_categoria, back_populates='categorias')
 
 class Ingrediente(db.Model):
     __tablename__ = 'ingrediente'

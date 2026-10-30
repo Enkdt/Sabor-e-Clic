@@ -1,9 +1,8 @@
 #Arquivo para inicialização e reunião do flask
-#TODO: Organizar imports dps e add flask jwt extended
+#TODO: Organizar imports dps
 
 import logging
 import models
-# from models import * (nao tamo precisando por enquanto)
 from logging.handlers import RotatingFileHandler
 from sqlalchemy.orm import configure_mappers
 from pathlib import Path
@@ -12,42 +11,64 @@ from flask import Flask
 from flask_talisman import Talisman
 from flask_cors import CORS
 from flask_limiter.errors import RateLimitExceeded
+from flask_wtf.csrf import CSRFError
 
 from utils import err_json
 from config import Config, mail
 from blueprints.auth import auth_bp
-from extensions import db, limiter
+from blueprints.bancadas import bancadas_bp
+from extensions import csrf, db, limiter
 
 logger = logging.getLogger(__name__)
 
-def create_app():
+def _configure_logging():
+    sabor_logger = logging.getLogger()
+    #isso aq é só pra n criar handler duplicado
+    if any(handler.name == "sabor-file" for handler in sabor_logger.handlers):
+        return
+    Path("logs").mkdir(exist_ok=True)
+    handler = RotatingFileHandler("logs/logSabor&Clic.log", maxBytes=10485760, backupCount=3)
+    handler.set_name("sabor-file")
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+    sabor_logger.addHandler(handler)
+    sabor_logger.setLevel(logging.INFO)
+
+#Vou fazer uma config de teste dps
+def create_app(test_config=None):
     app = Flask(__name__)
     app.config.from_object(Config)
+    if test_config:
+        app.config.update(test_config)
 
     #extensões
     db.init_app(app)
     limiter.init_app(app)
-    Talisman(app)
-    CORS(app)
+    csrf.init_app(app)
+    Talisman(app, force_https=not app.debug)
+    CORS(app, origins=app.config["FRONTEND_BASE_URL"], supports_credentials=True)
     
     #mail
     mail.init_app(app) 
     
-    #database
+    database_path = app.config.get("DATABASE")
+    if database_path:
+        Path(database_path).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
+
     with app.app_context():
         configure_mappers()
-        print("SQLALchemy working")
         db.create_all()
-        print("Db working")
+        logger.info("Database tables checked")
 
     #blueprints, serão adicionadas mais posteriormente
     app.register_blueprint(auth_bp)
+    app.register_blueprint(bancadas_bp)
 
-    #Configuração de log, sujeito a mudança (especificamente a maneira de armazenamento)
-    Path("logs").mkdir(exist_ok=True)
-    handler = RotatingFileHandler('logs/logTeste.log',maxBytes=10485760,backupCount=3)
-    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
-    logging.basicConfig(level=logging.INFO,handlers=[handler])
+    @app.errorhandler(CSRFError)
+    def csrf_error_handler(error):
+        return err_json("CSRF_VALIDATION_FAILED", "Token CSRF ausente ou inválido.", status=400)
+
+    if not app.testing:
+        _configure_logging()
 
     #Caso tenham muitos erros, criar uma função geral para error handling (para não poluir o código)
     @app.errorhandler(RateLimitExceeded)
@@ -64,4 +85,4 @@ def create_app():
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=app.debug)

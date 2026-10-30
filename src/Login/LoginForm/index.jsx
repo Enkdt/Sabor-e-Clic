@@ -6,42 +6,25 @@ import { LoginDivider } from '../LoginDivider';
 import { Input } from '../../Components/Input';
 import './LoginForm.css';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../authContext';
 export const LoginForm=()=>{
 
     const navigate=useNavigate();
+    const { authenticate } = useAuth();
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');
     const [error,setError]=useState('');
 
-    const cleanForm=()=>{
-        
-    }
-
     const loginLogic = async (e) => {
         e.preventDefault();
+        setError('');
 
-        const response = await fetch('/api/login',{
-            //Metodo post ou get
-            method: 'POST', 
-            //Especificação do tipo de dado
-            headers: {'Content-Type':'application/json'},
-            //O que vai ser enviado
-            body: JSON.stringify({email: email, password:password})
-        })
-        //Vai só enviar, a validation vai ser no python
-
-        const data = await response.json();
-        console.log(data);
-        if(!response.ok){
-            //caso algum erro tenha ocorrido, como senha/email errados ou invalidos
-            setError(data.error.message);
-            return;
-        }
-        //Redireciona para a home page caso o login esteja bem sucedido :o
-        if(response.ok){
+        try {
+            await authenticate(email, password);
             navigate("/");
+        } catch (error) {
+            setError(error.message);
         }
-        //limpar inputs depois de submeter o login
     }
 
     const inputs=[

@@ -1,10 +1,7 @@
-from datetime import datetime, date, time
-from sqlalchemy import CheckConstraint, ForeignKey, String, Numeric, UniqueConstraint
+from datetime import datetime, time
+from sqlalchemy import ForeignKey, String, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
-
-# from .usuario import Cozinheiro
-# from .associacao import BancadaEquipamento
 
 class Agendamento(db.Model): # TODO: Fazer com que não possa ter agendamentos que se sobrepoem
     __tablename__ = 'agendamento'

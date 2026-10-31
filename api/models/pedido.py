@@ -1,10 +1,7 @@
-from datetime import datetime, date, time
-from sqlalchemy import CheckConstraint, ForeignKey, String, Numeric, UniqueConstraint
+from datetime import date
+from sqlalchemy import CheckConstraint, ForeignKey, String, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
-
-# from .restaurante import Prato, Cardapio
-# from .associacao import CozinheiroPedido, PedidoPrato, PedidoCardapio
 
 class Pedido(db.Model):
     __tablename__ = 'pedido'

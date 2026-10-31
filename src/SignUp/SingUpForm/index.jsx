@@ -3,8 +3,9 @@ import { AddressSelect } from '../../Components/AddressSelect'
 import { Input } from '../../Components/Input'
 import { NextBtn } from '../../Components/NextBtn'
 import './SignUpForm.css'
-import { NavLink, useNavigate } from 'react-router-dom';
-import { CheckCircleIcon, CheckFatIcon, CheckIcon } from '@phosphor-icons/react'
+import { useNavigate } from 'react-router-dom';
+import { CheckCircleIcon } from '@phosphor-icons/react'
+import { getCsrfToken } from '../../authSession'
 export const SignUpForm=()=>{
 
     const navigate=useNavigate();
@@ -14,6 +15,7 @@ export const SignUpForm=()=>{
     const [email,setEmail]=useState('');
     const [rua,setRua]=useState('');
     const [num,setNum]=useState('');
+    const [cep,setCep]=useState('');
     const [comp,setComp]=useState('');
     const [senha,setSenha]=useState('');
     const [confSenha,setConfSenha]=useState('');
@@ -60,10 +62,13 @@ export const SignUpForm=()=>{
         e.preventDefault();
 
         try {
+            const csrfToken = await getCsrfToken();
             const response = await fetch('/api/cadastro', {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
                 },
                 body: JSON.stringify({
                     name: nome,
@@ -71,10 +76,10 @@ export const SignUpForm=()=>{
                     email: email,
                     password: senha,
                     password_confirmation: confSenha,
-                    cep:null,
-                    country: endereco.country.name,
-                    state: endereco.state.name,
-                    city: endereco.city.name,
+                    cep,
+                    country: endereco.country?.name || '',
+                    state: endereco.state?.name || '',
+                    city: endereco.city?.name || '',
                     street: rua,
                     number: num,
                     extra: comp,
@@ -83,8 +88,6 @@ export const SignUpForm=()=>{
 
             const data = await response.json();
 
-            console.log(data);
-
             if (!response.ok) {
                 setError(data.error.message);
                 return;
@@ -92,8 +95,7 @@ export const SignUpForm=()=>{
 
             navigate('/');
 
-        } catch(error){
-            //teste
+        } catch {
             setError('Não foi possível conectar ao servidor.');
         }
     };
@@ -118,6 +120,7 @@ export const SignUpForm=()=>{
             <label className='addressLabel'>Endereço</label>
             <AddressSelect onAddressChange={setEndereco}/>
             <Input label="Rua" placeholder="Ex: Rua Augusta" type="text" className="loginInput" onChange={(e) => setRua(e.target.value)}/>
+            <Input label="CEP" placeholder="Ex: 01001-000" type="text" className="loginInput" onChange={(e) => setCep(e.target.value)}/>
             <div className='divNumComp'>
                 <Input label="Número" placeholder="Ex: 120" type="text" className="loginInput" onChange={(e) => setNum(e.target.value)}/>
                 <Input label="Complemento" placeholder="Ex: apto 13" type="text" className="loginInput" onChange={(e) => setComp(e.target.value)}/>

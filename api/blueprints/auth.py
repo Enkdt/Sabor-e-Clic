@@ -1,27 +1,31 @@
 #Arquivo às blueprints de autenticação 
 #TODO: Inserir função de recuperar conta (email), Inserir login por oAuth (google), Adicionar MFA
-#TODO: inserir flaskJWT para validar a sessão
-
+#Antes da produção, mudar a criação de user pro cep não ficar none
 import validations as val
 import logging
 
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
-from flask import Blueprint, request, jsonify
-from utils import err_json, get_attr
-from extensions import limiter
-from models.usuario import get_user, create_user
+from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
+from flask import Blueprint, request, jsonify, session, g
+from flask_wtf.csrf import generate_csrf
+from utils import err_json, get_attr, validateToken, sendAuthEmail
+from extensions import csrf, db, limiter
+from models.crud import CRUD
+from decorators import user_role, validar
 
 
 logger = logging.getLogger(__name__)
 auth_bp = Blueprint("auth",__name__,url_prefix="/api")
 
+@auth_bp.get('/csrf-token')
+def csrf_token():
+    return jsonify({"csrf_token": generate_csrf()}), 200
+
+
 @auth_bp.route('/login', methods=["POST"])
 @limiter.limit("5 per minute")
 def login():
-    
-    #O {}/"" é pra não crashar com empty req/not json
     data = request.get_json(silent=True)
     if not val.check_json(data):
         return err_json(
@@ -30,8 +34,10 @@ def login():
                 status=400
         )
 
-    email = (data.get('email') or "").strip()
-    password = data.get('password') or ""
+    email_input = data.get('email')
+    email = email_input.strip() if isinstance(email_input, str) else ""
+    password_input = data.get('password')
+    password = password_input if isinstance(password_input, str) else ""
 
     errors = {}
 
@@ -49,9 +55,7 @@ def login():
             fields=errors,
             status=400
         )
-    #Trocar pra get_user
-    #user = database.execute("SELECT * FROM test_table WHERE u_email = ?",(email,)).fetchone()
-    user = get_user(email)
+    user = CRUD.read.usuario_por_email(email)
 
     logger.info("Tentativa de login do email: %s", email)
     if not user:
@@ -74,7 +78,7 @@ def login():
             message="Email ou senha incorreta",
             status = 401
         )        
-    except Exception:
+    except (VerificationError, InvalidHashError):
         logger.exception("Impossibilitado de realizar verificação do email: %s",email)
         return err_json(
             code="COULD_NOT_CHECK",
@@ -82,13 +86,41 @@ def login():
             status = 500
         ) 
 
+    if not user.email_verificado:
+        logger.info("Login bloqueado porque o email ainda não foi verificado: %s", email)
+        return err_json(
+            code="EMAIL_NOT_VERIFIED",
+            message="Verifique seu email antes de entrar.",
+            status=403
+        )
+
     logger.info("Login realizado com sucesso por %s",email)
-    #Vai ser usado pra ir pra próxima página
-    #Tem q ver da autenticação, cookies p validar
+    role = user_role(user)
+    if role is None:
+        return err_json("INVALID_ACCOUNT_ROLE", "A conta não possui um perfil válido", status=403)
+    session.clear()
+    session["user_id"] = user.id
+    session.permanent = True
     return jsonify({
-    "success":True,
-    "user":{"email":user.email}
-    }),200
+        "success": True,
+        "user": {"id": user.id, "email": user.email, "role": role},
+    }), 200
+
+
+@auth_bp.get('/session')
+@validar
+def validar_sessao():
+    return jsonify({
+        "success": True,
+        "user": {"id": g.current_user.id, "email": g.current_user.email, "role": g.current_role},
+    }), 200
+
+
+@auth_bp.post('/logout')
+def logout():
+    session.clear()
+    return jsonify({"success": True}), 200
+
 
 @auth_bp.route('/cadastro', methods=["POST"])
 def cadastro():
@@ -96,15 +128,15 @@ def cadastro():
     if not val.check_json(data):
         return err_json(
                 code="INVALID_JSON",
-                message="Envie os dados em formato JSON válido.",
+                message="Envie os dados em formato JSON válido",
                 status=400
         )
     fields = ['name', 'surname', 'email', 'password','password_confirmation', 'cep', 'country',
-    'street', 'number', 'neighborhood','city', 'state', 'extra']   
+    'street', 'number','neighborhood','city', 'state', 'extra']   
     f_info = get_attr(data,fields);
     required = [field for field in fields if field != 'extra']
+
     missing = [field for field in required if not f_info.get(field)]
-    
     if missing:
         return err_json(
             code="MISSING_INFO",
@@ -117,18 +149,19 @@ def cadastro():
     if not val.check_email(f_info['email']):
         return err_json(
             code="INVALID_EMAIL",
-            message="O email inserido é inválido.",
+            message="O email inserido é inválido",
             status = 400
         )        
 
     if f_info['password'] != f_info['password_confirmation']:
         return err_json(
             code="PASSWORD_DOES_NOT_MATCH",
-            message="Senhas inseridas são diferentes.",
+            message="Senhas inseridas são diferentes",
             status = 409
         )
-     
-    if not val.check_pwd_strength(f_info['password']):
+
+    infos = [f_info[field] for field in required if field not in ('password','password_confirmation')]
+    if not val.check_pwd_strength(f_info['password'],infos):
         return err_json(
             code="WEAK_PASSWORD",
             message="Senha muito fraca, utilize outra senha",
@@ -136,19 +169,19 @@ def cadastro():
         ) 
 
     try:
-        user = create_user(
-            full_name=f"{f_info['name']} {f_info['surname']}",
-            email=f_info['email'].strip(),
-            password=f_info['password'],
+        CRUD.create.cliente_com_endereco(
+            nome=f"{f_info['name']} {f_info['surname']}",
+            email=f_info['email'],
+            senha=f_info['password'],
+            rua=f_info['street'], 
+            numero=f_info['number'],
             cep=f_info['cep'],
-            country=f_info['country'],
-            street=f_info['street'], 
-            number=f_info['number'],
-            neighborhood=f_info['neighborhood'],
-            city=f_info['city'],
-            state=f_info['state'],
-            complement=f_info.get('extra') or None
-        )    
+            pais=f_info['country'],
+            estado=f_info['state'],
+            cidade=f_info['city'],
+            bairro=f_info['neighborhood'],
+            complemento=f_info.get('extra') or None
+        )
     except ValueError:
         logger.warning("Tentativa de criação de usuário com email já registrado")
         return err_json(
@@ -160,25 +193,67 @@ def cadastro():
         logger.warning("Conflito de integridade durante o cadastro")
         return err_json(
             code="INTEGRITY_ERROR",
-            message="Não foi possível cadastrar os dados informados.",
+            message="Não foi possível cadastrar os dados informados",
             status=409
         )
     except SQLAlchemyError:
         logger.exception("Erro no banco durante o cadastro")
         return err_json(
             code="DATABASE_ERROR",
-            message="Não foi possível criar a conta.",
+            message="Não foi possível criar a conta",
             status=500
         )
-    logger.info("Usuário %s registrado com sucesso",user.email)
+    logger.info("Usuário %s registrado com sucesso",f_info['email'])
+    sendAuthEmail(f_info['email'])
     return jsonify({
         "success": True,
         "message": "Usuário criado com sucesso",
-        "user": {"email": user.email}
+        "user": {"email": f_info['email']}
     }), 201        
 
 @auth_bp.route('/cadastro/validar', methods=["POST"])
-def validar():
-    
-    pass
+@csrf.exempt
+def validar_cadastro():
+    data = request.get_json(silent=True)
+    if not val.check_json(data):
+        return err_json(
+                code="INVALID_JSON",
+                message="Envie os dados em formato JSON válido",
+                status=400
+        )
+
+    token_input = data.get('token')
+    token = token_input.strip() if isinstance(token_input, str) else ""
+    if not token:
+        return err_json(
+                code="ABSENT_TOKEN",
+                message="Nenhum token foi enviado",
+                status=400
+        )
+
+    email = validateToken(token, "user validation")
+    if not email:
+        return err_json(
+            code="INVALID_OR_EXPIRED_TOKEN",
+            message="O link de validação é inválido ou expirou. Solicite um novo email",
+            status=400
+        )
+
+    user = CRUD.read.usuario_por_email(email)
+    if not user:
+        return err_json(
+            code="USER_NOT_FOUND",
+            message="Não foi encontrada uma conta para este token",
+            status=404
+        )
+
+    if not user.email_verificado:
+        user.email_verificado = True
+        db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "Email validado com sucesso",
+        "user": {"email": user.email}
+    }), 200
 

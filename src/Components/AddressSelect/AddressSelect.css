@@ -9,7 +9,8 @@
 }
 
 .addressField .stdropdown-container{
-    background-color: #F2F2F2;
+    background-color: var(--surface-color);
+    color: var(--text-color);
     border-radius: 4px;
     padding: 8px;
     transition: all 0.25s ease;
@@ -29,7 +30,8 @@
     overflow-x: hidden;
     z-index: 1000;
     box-sizing: border-box;
-    background-color: #F2F2F2;
+    background-color: var(--surface-color);
+    color: var(--text-color);
 }
 
 .addressField .stdropdown-item{
@@ -37,7 +39,7 @@
 }
 
 .addressField .stdropdown-item:hover{
-    background-color: #dcdcdc;
+    background-color: var(--bg-color);
 }
 
 .addressField .stdropdown-tools{
@@ -46,9 +48,14 @@
 
 .addressField .stdropdown-input{
     transition: all 0.25s ease;
-    color: #3d3d3d;
+    color: var(--text-color);
 }
 
 .addressField .stdropdown-input input:focus{
     outline: none;
+}
+
+.addressField .stdropdown-input input:focus-visible{
+    outline: 3px solid var(--brand-color);
+    outline-offset: 2px;
 }

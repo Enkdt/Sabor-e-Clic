@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import datetime, time
 from sqlalchemy import CheckConstraint, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
@@ -10,6 +10,7 @@ class Usuario(db.Model):
     email: Mapped[str] = mapped_column(String(90), unique=True, nullable=False)
     senha_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     email_verificado: Mapped[bool] = mapped_column(nullable=False, default=False)
+    auth_version: Mapped[int] = mapped_column(nullable=False, default=1)
     funcionario: Mapped['Funcionario | None'] = relationship(back_populates='usuario')
     cozinheiro: Mapped['Cozinheiro | None'] = relationship(back_populates='usuario')
     cliente: Mapped['Cliente | None'] = relationship(back_populates='usuario')
@@ -25,8 +26,17 @@ class Usuario(db.Model):
             )
             if profile is not None
         ]
-        # multi-profile account from inheriting the highest privilege.
+        # Impede que uma conta com vários perfis herde o maior nível de privilégio.
         return roles[0] if len(roles) == 1 else None
+
+class PasswordResetToken(db.Model):
+    __tablename__ = 'password_reset_token'
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('usuario.id'), nullable=False, index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(nullable=False)
+    used_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    usuario: Mapped['Usuario'] = relationship()
 
 class Funcionario(db.Model):
     __tablename__ = 'funcionario'
@@ -35,7 +45,7 @@ class Funcionario(db.Model):
     usuario: Mapped['Usuario'] = relationship(back_populates='funcionario')
     __table_args__ = (
         CheckConstraint(
-            "nivel_permissao BETWEEN 1 AND 5", # TODO: Ajustar isso
+            "nivel_permissao BETWEEN 1 AND 5", # TODO: Ajustar isso.
             name='ck_funcionario_nivel_permissao'
             ),
         ) 
@@ -75,7 +85,7 @@ class Cliente(db.Model):
 class ClienteEndereco(db.Model):
     __tablename__ = 'cliente_endereco'
     id_usuario: Mapped[int] = mapped_column(ForeignKey('cliente.id_usuario'),nullable=False)
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True) # numero que difere ele de outros enderecos
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True) # Número que diferencia este endereço dos demais.
     rua: Mapped[str] = mapped_column(String(45), nullable=False)
     numero: Mapped[str] = mapped_column(String(5), nullable=False)
     complemento: Mapped[str| None] = mapped_column(String(45),nullable=True)
@@ -83,5 +93,5 @@ class ClienteEndereco(db.Model):
     pais: Mapped[str] = mapped_column(String(45), nullable=False)
     bairro: Mapped[str] = mapped_column(String(45), nullable=False)
     cidade: Mapped[str] = mapped_column(String(45), nullable=False)
-    estado: Mapped[str] = mapped_column(String(3), nullable=False) # Estado seria: SP, RJ, MG, etc.
+    estado: Mapped[str] = mapped_column(String(3), nullable=False) # Sigla do estado, como SP, RJ ou MG.
     cliente: Mapped['Cliente'] = relationship(back_populates='endereco')

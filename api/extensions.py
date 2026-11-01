@@ -3,7 +3,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
 
-#Recursos compartilhados,add o resto conforme necessidade
+# Recursos compartilhados; adicionar outros conforme necessário.
 db = SQLAlchemy()
 limiter = Limiter(key_func=get_remote_address)
 csrf = CSRFProtect()

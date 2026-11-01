@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getCsrfToken } from './authSession';
 
 //depois mudar essa página tá, eu peguei ela pra testar só
 export function EmailVerification() {
@@ -9,11 +10,12 @@ export function EmailVerification() {
 
   useEffect(() => {
     if (!token) return;
-    fetch('/api/cadastro/validar', {
+    getCsrfToken().then((csrfToken) => fetch('/api/cadastro/validar', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
       body: JSON.stringify({ token }),
-    })
+    }))
     .then(async (response) => {
         const data = await response.json();
         if (!response.ok) {

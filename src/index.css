@@ -2,14 +2,72 @@
 
 :root{
   --bg-color:#FFFAF5;
+  --surface-color:#FFFEFE;
+  --text-color:#29251f;
+  --muted-text-color:#514a43;
+  --brand-color:#426700;
+  --brand-hover:#304c00;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"]{
+  --bg-color:#171914;
+  --surface-color:#24271f;
+  --text-color:#f6f4ed;
+  --muted-text-color:#d2d0c8;
+  --brand-color:#d0f391;
+  --brand-hover:#e0ffa3;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark){
+  :root[data-theme="system"]{
+    --bg-color:#171914;
+    --surface-color:#24271f;
+    --text-color:#f6f4ed;
+    --muted-text-color:#d2d0c8;
+    --brand-color:#d0f391;
+    --brand-hover:#e0ffa3;
+    color-scheme: dark;
+  }
 }
 
 body{
   margin: 0;
   background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
+:focus-visible{outline:3px solid #356000;outline-offset:3px}
+:root[data-theme="dark"] :focus-visible{outline-color:#c3ec74}
+@media (prefers-color-scheme: dark){:root[data-theme="system"] :focus-visible{outline-color:#c3ec74}}
+.theme-control{position:fixed;z-index:1000;right:1rem;top:1rem;display:flex;gap:.5rem;align-items:center;padding:.5rem;background:var(--surface-color);color:var(--text-color);border:1px solid currentColor;border-radius:.4rem}
+.theme-control select,.auth-flow input,.auth-flow button{font:inherit;padding:.55rem;border-radius:.3rem}
+.auth-flow{max-width:32rem;margin:7rem auto 2rem;padding:2rem;background:var(--surface-color);color:var(--text-color)}
+.auth-flow form{display:grid;gap:1rem}
+.auth-flow label{display:grid;gap:.4rem}
+.auth-flow input{border:1px solid #5b564e;background:var(--bg-color);color:var(--text-color)}
+.auth-flow button{border:2px solid #395a00;background:#395a00;color:#fff;font-weight:600;cursor:pointer}
+.auth-flow a{color:#355700}
+:root[data-theme="dark"] .auth-flow a{color:#d0f391}
+@media (prefers-color-scheme: dark){:root[data-theme="system"] .auth-flow a{color:#d0f391}}
+:root[data-theme="dark"] .auth-flow button{background:#d0f391;color:#171914;border-color:#d0f391}
+.auth-flow button:hover{background:#294200;color:#fff}
+:root[data-theme="dark"] .auth-flow button:hover{background:#e0ffa3;color:#171914}
+.auth-flow input:disabled{color:var(--muted-text-color);cursor:not-allowed}
+.auth-flow button:disabled{background:#e7e2d8;border-color:#514a43;color:#29251f;cursor:not-allowed}
+:root[data-theme="dark"] .auth-flow button:disabled{background:#4a4d44;border-color:#d2d0c8;color:#f6f4ed}
+@media (prefers-color-scheme: dark){:root[data-theme="system"] .auth-flow button:disabled{background:#4a4d44;border-color:#d2d0c8;color:#f6f4ed}}
+:root[data-theme="dark"] .ReqP,:root[data-theme="dark"] .pwdReq li,:root[data-theme="dark"] .pwdReq .checkIcon{color:var(--muted-text-color)}
+@media (prefers-color-scheme: dark){:root[data-theme="system"] .ReqP,:root[data-theme="system"] .pwdReq li,:root[data-theme="system"] .pwdReq .checkIcon{color:var(--muted-text-color)}}
+
 ::selection{
-  background: #73980D;
-  color: #FFFAF5;
+  background: #426700;
+  color: #FFFFFF;
 }
+
+:root[data-theme="dark"] .loginError{color:#ff8b82}
+:root[data-theme="dark"] .pwdReq .valido li,:root[data-theme="dark"] .pwdReq .valido .checkIcon{color:#86ef79}
+:root[data-theme="dark"] .pwdReq .invalido li,:root[data-theme="dark"] .pwdReq .invalido .checkIcon,:root[data-theme="dark"] .confInvalido{color:#ff8b82}
+:root[data-theme="dark"] .loginInput.error{border-color:#ff8b82}
+@media (prefers-color-scheme: dark){:root[data-theme="system"] .loginError{color:#ff8b82}:root[data-theme="system"] .pwdReq .valido li,:root[data-theme="system"] .pwdReq .valido .checkIcon{color:#86ef79}:root[data-theme="system"] .pwdReq .invalido li,:root[data-theme="system"] .pwdReq .invalido .checkIcon,:root[data-theme="system"] .confInvalido{color:#ff8b82}}

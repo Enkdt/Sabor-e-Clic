@@ -5,16 +5,23 @@ import { AuthContext } from './authContext';
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isSessionLoading, setSessionLoading] = useState(true);
+  const [sessionStatus, setSessionStatus] = useState('loading');
 
   useEffect(() => {
     let isMounted = true;
 
     validateSession()
       .then((sessionUser) => {
-        if (isMounted) setUser(sessionUser);
+        if (isMounted) {
+          setUser(sessionUser);
+          setSessionStatus(sessionUser ? 'authenticated' : 'unauthenticated');
+        }
       })
       .catch(() => {
-        if (isMounted) setUser(null);
+        if (isMounted) {
+          setUser(null);
+          setSessionStatus('unauthenticated');
+        }
       })
       .finally(() => {
         if (isMounted) setSessionLoading(false);
@@ -28,16 +35,18 @@ export function AuthProvider({ children }) {
   const authenticate = async (email, password) => {
     const response = await login(email, password);
     setUser(response.user);
+    setSessionStatus('authenticated');
     return response;
   };
 
   const logout = async () => {
     await clearSession();
     setUser(null);
+    setSessionStatus('unauthenticated');
   };
 
   return (
-    <AuthContext.Provider value={{ user, isSessionLoading, authenticate, logout }}>
+    <AuthContext.Provider value={{ user, isSessionLoading, sessionStatus, isAuthenticated: Boolean(user), authenticate, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,20 +1,20 @@
 import logging
 from flask import current_app, jsonify, render_template_string
 
-#P/ token, se precisar mover dps
+# Para tokens. Mover depois, se necessário.
 from datetime import datetime, timedelta,timezone
 import jwt
 
-#P/ Email se precisar depois
+# Para email. Mover depois, se necessário.
 from flask_mail import Message
 from config import mail
 
 logger = logging.getLogger(__name__)
 
-#code = Código. E.g PAGE NOT FOUND, VALIDATION_FAILED, etc
-#msg = Mensagem customizada. E.g "E-mail is required"
-#inpField = qual campo pertence. E.g msg anterior pertenceria ao campo de nome email
-#status = Código http. E.g 404, 403, 200
+# code = código, por exemplo PAGE_NOT_FOUND ou VALIDATION_FAILED
+# msg = mensagem personalizada, por exemplo "O e-mail é obrigatório"
+# inpField = campo ao qual a mensagem pertence, por exemplo "email"
+# status = código HTTP, por exemplo 404, 403 ou 200
 def err_json(code, message=None, fields=None, status=400):
     """Gera um erro em formato json que é retornado ao front-end"""
     body = {"error":{"code":code}}
@@ -25,12 +25,12 @@ def err_json(code, message=None, fields=None, status=400):
     logger.debug("Erro da api: %s", code)
     return jsonify(body), status
 
-#Usado para facilitar o unpack do json
+# Usado para facilitar a leitura dos dados JSON
 def get_attr(origin, keys):
     """Função para desempacotar o json recebido do front end, armazenando-o em um dicionário"""
     return {key: value.strip() if isinstance(value := origin.get(key), str) else "" for key in keys}
 
-#Mudar posteriormenteee pra uma pasta services/token.py
+# Mover depois para services/token.py
 
 def generateToken(email:str, purpose:str, expirationMinutes:int = 15):
     """Gera o token do usuário a partir de seus dados, com propósito e tempo de expiração"""
@@ -50,7 +50,7 @@ def validateToken(token:str,purpose:str):
     except (jwt.PyJWTError, TypeError):
         return None
 
-#Mudar posteriormente para sevicees/email.py
+# Mover depois para services/email.py
 
 def sendEmail(Subject:str,recipient:str,content:str,HTMLcontent:str):
     """Função genérica de envio de email a determinado usuário"""

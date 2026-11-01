@@ -4,6 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from decorators import admin, permission, validar
 from extensions import db
+from models.crud import CRUD
 from models.restaurante import Categoria, Restaurante
 from validations import check_json
 from utils import err_json
@@ -12,29 +13,32 @@ from utils import err_json
 bancadas_bp = Blueprint("bancadas", __name__, url_prefix="/api/bancadas")
 logger = logging.getLogger(__name__)
 
-#ver se permission vai ficar com cooks tbm, mas provável q sim
+# Verificar se cozinheiros também terão essa permissão; provavelmente, sim.
 @bancadas_bp.post("/restaurantes")
 @validar
 @permission(admin)
 def criar_restaurante():
-    """Cria um restaurante a partir do json {nome:str, categorias:[list]}, tbd"""
+    """Cria um restaurante e associa suas categorias."""
     data = request.get_json(silent=True)
     if not check_json(data):
         return err_json("INVALID_JSON", "Envie os dados em formato JSON válido.", status=400)
 
     nome = data.get("nome")
     nome = nome.strip() if isinstance(nome, str) else ""
-    #esse aq é pq n teve a verifiação tá, ée pra deixar tudo no mesmo formato de list
+
+    # Aceita tanto "categorias" quanto "categoria".
     category_input = data.get("categorias", data.get("categoria", []))
     if isinstance(category_input, str):
         category_input = [category_input]
     if not isinstance(category_input, list):
         category_input = []
     categories = list(dict.fromkeys(
-        value.strip() for value in category_input
+        value.strip()
+        for value in category_input
         if isinstance(value, str) and value.strip()
     ))
 
+    # Validação dos campos.
     errors = {}
     if not nome:
         errors["nome"] = "Nome do restaurante é obrigatório."
@@ -47,27 +51,30 @@ def criar_restaurante():
     if errors:
         return err_json("VALIDATION_FAILED", "Preencha os campos obrigatórios.", fields=errors, status=400)
 
-    restaurante = Restaurante(nome=nome)
-    for category_name in categories:
-        category = db.session.execute(
-            db.select(Categoria).where(Categoria.nome == category_name)
-        ).scalar_one_or_none()
-        if category is None:
-            category = Categoria(nome=category_name)
-        restaurante.categorias.append(category)
-
-    db.session.add(restaurante)
     try:
-        db.session.commit()
+        restaurante = CRUD.create.restaurante(nome=nome)
+        for category_name in categories:
+            existing = CRUD.read.categorias(filters={"nome": category_name}, limit=1)
+            if existing:
+                category = existing[0]
+            else:
+                category = CRUD.create.categoria(nome=category_name)
+            CRUD.create.restaurante_categoria(
+                id_restaurante=restaurante.id,
+                id_categoria=category.id
+            )
+
     except SQLAlchemyError:
-        db.session.rollback()
-        logger.exception("Não foi possível criar o reestaurante")
+        logger.exception("Falha ao criar restaurante e vincular categorias.")
         return err_json("DATABASE_ERROR", "Não foi possível criar o restaurante.", status=500)
+    except ValueError as e:
+        return err_json("VALIDATION_FAILED", str(e), status=400)
+    logger.info("Restaurante %s criado com %s categoria(s).", restaurante.id, len(categories))
     return jsonify({
         "success": True,
         "restaurante": {
             "id": restaurante.id,
             "nome": restaurante.nome,
-            "categorias": [category.nome for category in restaurante.categorias],
-        },
+            "categorias": categories
+        }
     }), 201

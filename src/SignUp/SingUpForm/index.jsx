@@ -15,6 +15,7 @@ export const SignUpForm=()=>{
     const [email,setEmail]=useState('');
     const [rua,setRua]=useState('');
     const [num,setNum]=useState('');
+    const [bairro, setBairro] = useState('');
     const [cep,setCep]=useState('');
     const [comp,setComp]=useState('');
     const [senha,setSenha]=useState('');
@@ -77,6 +78,7 @@ export const SignUpForm=()=>{
                     password: senha,
                     password_confirmation: confSenha,
                     cep,
+                    neighborhood: bairro,
                     country: endereco.country?.name || '',
                     state: endereco.state?.name || '',
                     city: endereco.city?.name || '',
@@ -125,6 +127,7 @@ export const SignUpForm=()=>{
                 <Input label="Número" placeholder="Ex: 120" type="text" className="loginInput" onChange={(e) => setNum(e.target.value)}/>
                 <Input label="Complemento" placeholder="Ex: apto 13" type="text" className="loginInput" onChange={(e) => setComp(e.target.value)}/>
             </div>
+            <Input label="Bairro" placeholder="Ex: Centro" type="text" className="loginInput" onChange={(e) => setBairro(e.target.value)}/>
                 <Input label="Senha" placeholder="Crie sua senha" type="password" className="loginInput" onChange={(e) => setSenha(e.target.value)}/>
                 <p className='ReqP'>Sua senha deve conter ao mínimo:</p>
                 <ul className='pwdReq'>

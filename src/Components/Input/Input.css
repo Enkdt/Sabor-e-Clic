@@ -14,7 +14,7 @@
 .loginInput{
     border: 1px solid #D2C3C3;
     border-radius: 4px;
-    color: #938787;
+    color: var(--muted-text-color);
     background-color: transparent;
     transition: all 0.35s ease;
     font-size: 20px;
@@ -24,10 +24,15 @@
 
 .loginInput:focus{
     outline: none;
-    border-color: #73980D;
-    color: #4c4747;
+    border-color: var(--brand-color);
+    color: var(--text-color);
+}
+
+.loginInput:focus-visible{
+    outline: 3px solid var(--brand-color);
+    outline-offset: 2px;
 }
 
 .loginInput.error{
-    border-color: #e34343;
+    border-color: #b42318;
 }

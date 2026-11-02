@@ -1,7 +1,7 @@
-# TODO: Ligar isso a um banco de dados funcional
-# TODO: Testar 0-0
+# TODO: Conectar isso a um banco de dados funcional (neon).
+# TODO: Testar de ponta a ponta.
 
-# Evita erro de Circular Import
+# Evita erro de importação circular.
 from .usuario import (
     Usuario,
     Funcionario,
@@ -9,6 +9,7 @@ from .usuario import (
     Turno,
     Cliente,
     ClienteEndereco,
+    PasswordResetToken,
 )
 
 from .pedido import Pedido

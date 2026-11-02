@@ -47,6 +47,7 @@ class Prato(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     id_restaurante: Mapped[int] = mapped_column(ForeignKey('restaurante.id'))
     id_cardapio: Mapped[int] = mapped_column(ForeignKey('cardapio.id'))
+    nome: Mapped[str] = mapped_column(String(50), nullable=False)
     preco_unidade: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
     quantidade: Mapped[int] = mapped_column(nullable=False)
     restaurante: Mapped['Restaurante'] = relationship(back_populates='prato')
@@ -55,7 +56,7 @@ class Prato(db.Model):
     associacao_ingrediente: Mapped[list['PratoIngrediente']] = relationship(back_populates='prato')
     associacao_categoria: Mapped[list['PratoCategoria']] = relationship(back_populates='prato')
 
-# Restaurante e pratos usam as mesmas categorias, ver dps se compensa separar em categoriaPrato e categoriaRestaurante
+# Restaurantes e pratos usam as mesmas categorias; avaliar depois se vale separá-las.
 class Categoria(db.Model):
     __tablename__ = 'categoria'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -68,6 +69,6 @@ class Ingrediente(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     nome: Mapped[str] = mapped_column(String(30), nullable=False)
     validade: Mapped[date] = mapped_column(nullable=False)
-    unidade: Mapped[str] = mapped_column(String(10), nullable=False) # Ex: KG, G, L, ML
+    unidade: Mapped[str] = mapped_column(String(10), nullable=False) # Exemplos: KG, G, L e ML.
     quantidade: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
     associacao: Mapped[list['PratoIngrediente']] = relationship(back_populates='ingrediente')

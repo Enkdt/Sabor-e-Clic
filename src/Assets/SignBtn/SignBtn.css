@@ -1,7 +1,7 @@
 .SignBtn{
     font-family: poppins;
     font-weight: 300;
-    color: #73980D;
+    color: var(--brand-color);
     border: none;
     background-color: transparent;
     border-radius: 4px;
@@ -12,5 +12,5 @@
 }
 
 .SignBtn:hover{
-    color: #506a07;
+    color: var(--brand-hover);
 }

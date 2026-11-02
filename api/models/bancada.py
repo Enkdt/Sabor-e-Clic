@@ -3,7 +3,7 @@ from sqlalchemy import ForeignKey, String, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
 
-class Agendamento(db.Model): # TODO: Fazer com que não possa ter agendamentos que se sobrepoem
+class Agendamento(db.Model): # TODO: Impedir agendamentos sobrepostos.
     __tablename__ = 'agendamento'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     id_cozinheiro: Mapped[int] = mapped_column(ForeignKey('cozinheiro.id_usuario'))

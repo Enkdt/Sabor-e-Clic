@@ -4,6 +4,10 @@ import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 
+const initialTheme = localStorage.getItem('theme-preference') || 'system'
+document.documentElement.dataset.theme = initialTheme
+document.documentElement.style.colorScheme = initialTheme === 'system' ? '' : initialTheme
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>

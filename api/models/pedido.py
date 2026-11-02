@@ -17,7 +17,7 @@ class Pedido(db.Model):
     associacao_cardapio: Mapped[list['PedidoCardapio']] = relationship(back_populates='pedido')
     __table_args__ = (
         CheckConstraint(
-            "status IN ('preparando', 'pronto')", #TODO: Ajustar isso
+            "status IN ('preparando', 'pronto')", # TODO: Ajustar isso.
             name='ck_pedido_status'
         ),
     )

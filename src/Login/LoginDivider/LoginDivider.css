@@ -9,7 +9,7 @@
 .loginDivider::after{
     content: '';
     height: 2px;
-    background-color: #73980D;
+    background-color: var(--brand-color);
     flex: 1;
 }
 
@@ -17,6 +17,6 @@
     font-family: poppins;
     font-weight: 300;
     font-size: 24px;
-    color: #73980D;
+    color: var(--brand-color);
 }
 

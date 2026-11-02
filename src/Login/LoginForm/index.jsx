@@ -5,11 +5,12 @@ import { NextBtn } from '../../Components/NextBtn';
 import { LoginDivider } from '../LoginDivider';
 import { Input } from '../../Components/Input';
 import './LoginForm.css';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../authContext';
 export const LoginForm=()=>{
 
     const navigate=useNavigate();
+    const location = useLocation();
     const { authenticate } = useAuth();
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');
@@ -21,7 +22,8 @@ export const LoginForm=()=>{
 
         try {
             await authenticate(email, password);
-            navigate("/");
+            const destination = location.state?.from;
+            navigate(typeof destination === 'string' && destination.startsWith('/') && !destination.startsWith('//') ? destination : '/');
         } catch (error) {
             setError(error.message);
         }
@@ -70,6 +72,7 @@ return (
                     </div>
                 ))}
                 <NextBtn text="Continuar"/>
+                <NavLink to="/recuperar-senha">Esqueceu a senha?</NavLink>
             </form>
 
             <LoginDivider/>

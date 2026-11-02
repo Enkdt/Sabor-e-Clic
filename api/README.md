@@ -64,5 +64,5 @@ Depois, só rodar
 Acessar, enquanto em dev:
 ```http://localhost:5173```
 
-USER TESTE: admin
-SENHA: 12345
+ADMIN TESTE: admindasilva@email.com
+SENHA: Faladorpassamal3!

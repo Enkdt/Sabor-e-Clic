@@ -3,7 +3,7 @@ from sqlalchemy import ForeignKey, String, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
 
-class Agendamento(db.Model): # TODO: Impedir agendamentos sobrepostos.
+class Agendamento(db.Model):
     __tablename__ = 'agendamento'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     id_cozinheiro: Mapped[int] = mapped_column(ForeignKey('cozinheiro.id_usuario'))
@@ -17,6 +17,7 @@ class Agendamento(db.Model): # TODO: Impedir agendamentos sobrepostos.
 class Bancada(db.Model):
     __tablename__ = 'bancada'
     id: Mapped[int] = mapped_column(primary_key=True)
+    preco_hora: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, default=40)
     agendamento: Mapped[list['Agendamento']] = relationship(back_populates='bancada')
     bancada_endereco: Mapped[list['BancadaEndereco']] = relationship(back_populates='bancada')
     bancada_horario_disponivel: Mapped[list['BancadaHorarioDisponivel']] = relationship(back_populates='bancada',cascade='all, delete-orphan')

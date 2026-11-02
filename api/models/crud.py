@@ -664,11 +664,11 @@ _EDITABLE = {
     "cardapio": {"nome", "tipo"},
     "restaurante": {"nome"},
     "restaurante_endereco": {"rua", "numero", "complemento", "bairro", "cidade", "estado"},
-    "prato": {"preco_unidade", "quantidade"},
+    "prato": {"nome", "preco_unidade", "quantidade"},
     "categoria": {"nome"},
     "ingrediente": {"nome", "validade", "unidade", "quantidade"},
     "agendamento": {"horario_agendado", "tempo_agendado", "preco_total"},
-    "bancada": set(),
+    "bancada": {"preco_hora"},
     "bancada_endereco": {"rua", "numero", "complemento", "bairro", "cidade", "estado"},
     "bancada_horario_disponivel": {"inicio", "fim"},
     "equipamento": {"nome", "tipo"},
@@ -1065,6 +1065,8 @@ def _validate_domain(model, data):
         _nonnegative(data, "tempo_agendado", "preco_total")
         if "tempo_agendado" in data and data["tempo_agendado"] == 0:
             raise ValueError("A duração do agendamento deve ser maior que zero.")
+    elif model is Bancada:
+        _nonnegative(data, "preco_hora")
     elif model is PasswordResetToken:
         if "token_hash" in data and len(data["token_hash"]) != 64:
             raise ValueError("O hash do token deve conter 64 caracteres.")

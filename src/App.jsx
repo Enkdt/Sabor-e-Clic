@@ -1,5 +1,6 @@
 import './App.css'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { House, Moon, Sun, UserCircle } from '@phosphor-icons/react';
 import { useAuth } from './authContext';
 import { useEffect, useState } from 'react';
 import { Home } from './Home';
@@ -11,7 +12,7 @@ import { Estoque } from './Estoque';
 import { AdcEstoque } from './AdcEstoque';
 import { Carrinho } from './Carrinho';
 import { EmailVerification } from './EmailVerification';
-import { AuthProvider } from './AuthContext';
+import { AuthProvider } from './AuthProvider';
 
 /*Mudar isso depois pra ver como ficará melhor*/
 function ProtectedRoute({ children, allowedRoles }) {
@@ -25,8 +26,10 @@ function ProtectedRoute({ children, allowedRoles }) {
   return children;
 }
 
-function PreferencesAndAccessibility() {
+function AppToolbar() {
   const [preference, setPreference] = useState(() => localStorage.getItem('theme-preference') || 'system');
+  const { user } = useAuth();
+  const isDark = preference === 'dark' || (preference === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
   useEffect(() => {
     document.documentElement.dataset.theme = preference;
     document.documentElement.style.colorScheme = preference === 'system' ? '' : preference;
@@ -41,11 +44,22 @@ function PreferencesAndAccessibility() {
     script.onerror = () => script.remove();
     document.body.appendChild(script);
   }, []);
-  return <label className="theme-control">Tema
-    <select aria-label="Preferência de tema" value={preference} onChange={(event) => setPreference(event.target.value)}>
-      <option value="system">Seguir sistema</option><option value="light">Claro</option><option value="dark">Escuro</option>
-    </select>
-  </label>;
+  const name = user?.nome?.trim().split(/\s+/)[0] || user?.email?.split('@')[0] || 'usuário';
+  return <header className="app-toolbar">
+    <button
+      className="theme-toggle"
+      type="button"
+      aria-label={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
+      title={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
+      onClick={() => setPreference(isDark ? 'light' : 'dark')}
+    >
+      {isDark ? <Moon size={21} weight="fill" aria-hidden="true" /> : <Sun size={21} weight="fill" aria-hidden="true" />}
+    </button>
+    {user && <div className="toolbar-user-actions">
+      <span className="signed-in-greeting"><UserCircle size={22} weight="fill" aria-hidden="true" /> Olá, {name}!</span>
+      <Link className="home-link" to="/"><House size={18} weight="bold" aria-hidden="true" /> Início</Link>
+    </div>}
+  </header>;
 }
 
 function Protected({ children, roles }) { return <ProtectedRoute allowedRoles={roles}>{children}</ProtectedRoute>; }
@@ -53,17 +67,17 @@ function Protected({ children, roles }) { return <ProtectedRoute allowedRoles={r
 function App() {
  return (
     <AuthProvider>
-    <PreferencesAndAccessibility />
+    <AppToolbar />
     <Routes>
       <Route path='/' element={<Home/>}/>
       <Route path='/login' element={<Login/>}/>
       <Route path='/cadastro' element={<SignUp/>}/>
       <Route path='/cadastro/autenticar' element={<EmailVerification/>}/>
-      <Route path='/AgdBancada' element={<Protected><AgdBancada/></Protected>}/>
-      <Route path='/Bancada' element={<Protected><Bancada/></Protected>}/>
-      <Route path='/Estoque' element={<Protected roles={['admin']}><Estoque/></Protected>}/>
-      <Route path='/AdcEstoque' element={<Protected roles={['admin']}><AdcEstoque/></Protected>}/>
-      <Route path='/Carrinho' element={<Protected><Carrinho/></Protected>}/>
+      <Route path='/catalogo/bancadas' element={<Protected><AgdBancada/></Protected>}/>
+      <Route path='/bancada/:id' element={<Protected><Bancada/></Protected>}/>
+      <Route path='/estoque' element={<Protected roles={['admin']}><Estoque/></Protected>}/>
+      <Route path='/estoque/adicionar' element={<Protected roles={['admin']}><AdcEstoque/></Protected>}/>
+      <Route path='/carrinho' element={<Protected><Carrinho/></Protected>}/>
       <Route path='/recuperar-senha' element={<PasswordRecovery/>}/>
       <Route path='/redefinir-senha' element={<PasswordReset/>}/>
     </Routes>
@@ -125,3 +139,4 @@ function PasswordReset() {
 
 
 export default App
+

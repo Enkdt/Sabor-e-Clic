@@ -98,6 +98,40 @@ def create_app(test_config=None):
         with app.app_context():
             configure_mappers()
             db.create_all()
+            if "preco_hora" not in {column["name"] for column in inspect(db.engine).get_columns("bancada")}:
+                db.session.execute(text(
+                    "ALTER TABLE bancada ADD COLUMN preco_hora NUMERIC(10, 2) NOT NULL DEFAULT 40.00"
+                ))
+                db.session.commit()
+            if db.engine.dialect.name == "sqlite":
+                db.session.execute(text("""
+                    CREATE TRIGGER IF NOT EXISTS prevent_agendamento_overlap_insert
+                    BEFORE INSERT ON agendamento
+                    WHEN EXISTS (
+                        SELECT 1 FROM agendamento existing
+                        WHERE existing.id_bancada = NEW.id_bancada
+                          AND julianday(NEW.horario_agendado) < julianday(existing.horario_agendado) + (existing.tempo_agendado / 1440.0)
+                          AND julianday(existing.horario_agendado) < julianday(NEW.horario_agendado) + (NEW.tempo_agendado / 1440.0)
+                    )
+                    BEGIN
+                        SELECT RAISE(ABORT, 'A bancada já tem um agendamento nesse intervalo.');
+                    END
+                """))
+                db.session.execute(text("""
+                    CREATE TRIGGER IF NOT EXISTS prevent_agendamento_overlap_update
+                    BEFORE UPDATE OF id_bancada, horario_agendado, tempo_agendado ON agendamento
+                    WHEN EXISTS (
+                        SELECT 1 FROM agendamento existing
+                        WHERE existing.id != NEW.id
+                          AND existing.id_bancada = NEW.id_bancada
+                          AND julianday(NEW.horario_agendado) < julianday(existing.horario_agendado) + (existing.tempo_agendado / 1440.0)
+                          AND julianday(existing.horario_agendado) < julianday(NEW.horario_agendado) + (NEW.tempo_agendado / 1440.0)
+                    )
+                    BEGIN
+                        SELECT RAISE(ABORT, 'A bancada já tem um agendamento nesse intervalo.');
+                    END
+                """))
+                db.session.commit()
             if "auth_version" not in {column["name"] for column in inspect(db.engine).get_columns("usuario")}:
                 db.session.execute(text("ALTER TABLE usuario ADD COLUMN auth_version INTEGER NOT NULL DEFAULT 1"))
                 db.session.commit()

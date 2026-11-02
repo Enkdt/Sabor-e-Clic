@@ -126,7 +126,7 @@ def login():
     logger.info("Login realizado com sucesso.")
     return jsonify({
         "success": True,
-        "user": {"id": user.id, "email": user.email, "role": role},
+        "user": {"id": user.id, "nome": user.nome, "email": user.email, "role": role},
     }), 200
 
 
@@ -135,7 +135,7 @@ def login():
 def validar_sessao():
     return jsonify({
         "success": True,
-        "user": {"id": g.current_user.id, "email": g.current_user.email, "role": g.current_role},
+        "user": {"id": g.current_user.id, "nome": g.current_user.nome, "email": g.current_user.email, "role": g.current_role},
     }), 200
 
 

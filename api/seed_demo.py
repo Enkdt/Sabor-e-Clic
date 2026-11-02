@@ -353,7 +353,7 @@ def ensure_dish_ingredient(dish, ingredient, unit, quantity):
         )
 
 
-def ensure_bench(address):
+def ensure_bench(address, hourly_price):
     matching_addresses = CRUD.read.enderecos_bancada(filters={
         "rua": address["rua"],
         "numero": address["numero"],
@@ -361,8 +361,11 @@ def ensure_bench(address):
 
     if matching_addresses:
         bench = CRUD.read.bancada(matching_addresses[0].id_bancada)
+        if Decimal(str(bench.preco_hora)) != hourly_price:
+            CRUD.update.bancada(bench.id, {"preco_hora": hourly_price})
+            bench = CRUD.read.bancada(bench.id)
     else:
-        bench = CRUD.create.bancada()
+        bench = CRUD.create.bancada(preco_hora=hourly_price)
         CRUD.create.bancada_endereco(
             id_bancada=bench.id,
             id=1,
@@ -397,7 +400,7 @@ def ensure_bench_equipment(bench, equipment, quantity):
         )
 
 
-def ensure_booking(bench, cook, hour, price):
+def ensure_booking(bench, cook, hour):
     bookings = CRUD.read.agendamentos(filters={"id_bancada": bench.id})
 
     if any(booking.id_cozinheiro == cook.id_usuario for booking in bookings):
@@ -421,7 +424,7 @@ def ensure_booking(bench, cook, hour, price):
                 id_bancada=bench.id,
                 horario_agendado=start,
                 tempo_agendado=duration,
-                preco_total=price,
+                preco_total=Decimal(str(bench.preco_hora)) * duration / 60,
             )
             return
 
@@ -621,8 +624,8 @@ def seed():
     ]
 
     benches = [
-        ensure_bench(bench_addresses[0]),
-        ensure_bench(bench_addresses[1]),
+        ensure_bench(bench_addresses[0], Decimal("40.00")),
+        ensure_bench(bench_addresses[1], Decimal("45.00")),
     ]
 
     equipment_data = [
@@ -649,13 +652,11 @@ def seed():
         benches[0],
         cooks["rafael.cozinha@sabor.test"],
         time(9, 0),
-        Decimal("80.00"),
     )
     ensure_booking(
         benches[1],
         cooks["julia.ferraz@sabor.test"],
         time(13, 0),
-        Decimal("90.00"),
     )
 
     print("Seed de demonstração concluído.")

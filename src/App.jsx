@@ -1,6 +1,4 @@
-import './App.css'
-import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { House, Moon, Sun, UserCircle } from '@phosphor-icons/react';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './authContext';
 import { useEffect, useState } from 'react';
 import { Home } from './Home';
@@ -33,15 +31,7 @@ function ProtectedRoute({ children, allowedRoles }) {
   return children;
 }
 
-function AppToolbar() {
-  const [preference, setPreference] = useState(() => localStorage.getItem('theme-preference') || 'system');
-  const { user } = useAuth();
-  const isDark = preference === 'dark' || (preference === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  useEffect(() => {
-    document.documentElement.dataset.theme = preference;
-    document.documentElement.style.colorScheme = preference === 'system' ? '' : preference;
-    localStorage.setItem('theme-preference', preference);
-  }, [preference]);
+function AccessibilitySetup() {
   useEffect(() => {
     if (document.getElementById('vlibras-plugin')) return;
     const script = document.createElement('script');
@@ -51,22 +41,7 @@ function AppToolbar() {
     script.onerror = () => script.remove();
     document.body.appendChild(script);
   }, []);
-  const name = user?.nome?.trim().split(/\s+/)[0] || user?.email?.split('@')[0] || 'usuário';
-  return <header className="app-toolbar">
-    <button
-      className="theme-toggle"
-      type="button"
-      aria-label={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
-      title={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
-      onClick={() => setPreference(isDark ? 'light' : 'dark')}
-    >
-      {isDark ? <Moon size={21} weight="fill" aria-hidden="true" /> : <Sun size={21} weight="fill" aria-hidden="true" />}
-    </button>
-    {user && <div className="toolbar-user-actions">
-      <span className="signed-in-greeting"><UserCircle size={22} weight="fill" aria-hidden="true" /> Olá, {name}!</span>
-      <Link className="home-link" to="/"><House size={18} weight="bold" aria-hidden="true" /> Início</Link>
-    </div>}
-  </header>;
+  return null;
 }
 
 function Protected({ children, roles }) { return <ProtectedRoute allowedRoles={roles}>{children}</ProtectedRoute>; }
@@ -75,7 +50,7 @@ function Protected({ children, roles }) { return <ProtectedRoute allowedRoles={r
 function App() {
 return (
     <AuthProvider>
-    <AppToolbar />
+    <AccessibilitySetup />
     <Routes>
       <Route path='/' element={<Home/>}/>
       <Route path='/login' element={<Login/>}/>

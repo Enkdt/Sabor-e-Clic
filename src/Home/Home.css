@@ -1,0 +1,36 @@
+.restaurantSecP{
+    display: flex;
+}
+
+.restaurantSec .restaurantSecTitle{
+    font-family: Poppins;
+    font-weight: 300;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.restaurantSec .restaurantSecSM{
+    font-family: Poppins;
+    font-weight: 400;
+    font-size: 20px;
+    margin-bottom: 20px;
+    margin-left: auto;
+    color: #4a300186;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+}
+
+.restaurantSec .restaurantSecIcon{
+    transition: all 0.15s ease;
+}
+
+.restaurantSec .restaurantSecSM:hover{
+    color: #4a3001;
+}
+
+.restaurantSec .restaurantSecSM:hover .restaurantSecIcon{
+    transform: translateX(15px);
+}

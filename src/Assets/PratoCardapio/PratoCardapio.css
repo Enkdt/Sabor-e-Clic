@@ -1,12 +1,13 @@
 .divPrato{
     overflow: hidden;
-    width: 400px;
+    width: 100%;
     height: 260px;
 }
 
 
 .pratoCardapio{
-    width: 400px;
+    width: 100%;
     height: 260px;
+    object-fit: cover;
     transition: all 0.45s ease;
 }

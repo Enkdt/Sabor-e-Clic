@@ -1,0 +1,79 @@
+.stockPage{
+    width: 100%;
+    min-height: 100vh;
+    background-color: #fffaf5;
+    font-family: Poppins;
+}
+
+.stockPage .stockContent{
+    padding-top: 24px;
+    padding-bottom: 80px;
+}
+
+.stockPage .stockTop h1{
+    margin: 0;
+    font-weight: 400;
+    color: #191919;
+}
+
+.stockPage .stockTop .nextBtn{
+    margin: 0;
+    max-width: none;
+    padding: 8px 0;
+}
+
+.stockPage .stockBox{
+    margin-top: 16px;
+    background-color: #fdfdfd;
+    box-shadow: 0 0 32px 3px rgba(0, 0, 0, 0.08);
+}
+
+.stockPage .stockBoxHeader{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 8px;
+}
+
+.stockPage .stockBoxHeader p{
+    margin: 0;
+    font-weight: 300;
+}
+
+.stockPage .stockSort{
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.stockPage .stockSort select{
+    padding-right: 36px;
+    border: none;
+    background-color: transparent;
+    color: #191919;
+    font-family: Poppins;
+    font-weight: 300;
+    appearance: none;
+    cursor: pointer;
+}
+
+.stockPage .stockSort select:focus{
+    outline: none;
+}
+
+.stockPage .stockSortIcon{
+    position: absolute;
+    right: 0;
+    font-size: 26px;
+    pointer-events: none;
+}
+
+.stockPage .stockList{
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    margin: 0;
+    padding: 0;
+}

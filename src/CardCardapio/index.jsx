@@ -1,14 +1,18 @@
 import { PratoCardapio } from '../Assets/PratoCardapio'
+import { formatCurrency } from '../utils/formatCurrency'
 import './CardCardapio.css'
-export const CardCardapio=()=>{
+export const CardCardapio=({dishName,description,price})=>{
     return(
         <>
             <div className='CardCardapio'>
                 <PratoCardapio/>
-                <h2>Comida Gostosa</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam suscipit volutpat nulla. Nulla blandit odio eget leo </p>
-                <button>Adicionar ao carrinho</button>
-            </div> 
+                <h2>{dishName}</h2>
+                <p>{description}</p>
+                <div className='cardCardapioFooter'>
+                    <span className='cardCardapioPrice'>{formatCurrency(price)}</span>
+                    <button type='button' onClick={(e)=>e.preventDefault()}>Adicionar</button>
+                </div>
+            </div>
         </>
     )
 }

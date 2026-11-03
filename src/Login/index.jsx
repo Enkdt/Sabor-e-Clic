@@ -1,10 +1,10 @@
-import { Banner } from '../Assets/Banner'
+import { Header } from '../Components/Header'
 import './Login.css'
 import { LoginForm } from './LoginForm'
 export const Login=()=>{
     return(
         <>
-        <Banner/>
+        <Header/>
         <LoginForm/>
         </>
     )

@@ -13,6 +13,7 @@
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
     "@tailwindcss/cli": "^4.3.3",
+    "animate.css": "^4.1.1",
     "react": "^19.2.8",
     "react-country-state-city": "^1.1.13",
     "react-dom": "^19.2.8",

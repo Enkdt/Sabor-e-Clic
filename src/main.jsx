@@ -8,6 +8,7 @@ const initialTheme = localStorage.getItem('theme-preference') || 'system'
 document.documentElement.dataset.theme = initialTheme
 document.documentElement.style.colorScheme = initialTheme === 'system' ? '' : initialTheme
 
+import 'animate.css';
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>

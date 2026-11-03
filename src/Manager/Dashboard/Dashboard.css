@@ -1,0 +1,103 @@
+.dashboardPage{
+    width: 100%;
+    min-height: 100vh;
+    background-color: #fffaf5;
+    font-family: Poppins;
+}
+
+.dashboardPage .dashboardContent{
+    padding-top: 24px;
+    padding-bottom: 80px;
+}
+
+.dashboardPage .dashboardEyebrow{
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: #73980d;
+}
+
+.dashboardPage .dashboardTop h1{
+    margin: 0;
+    font-weight: 300;
+    color: #191919;
+}
+
+.dashboardPage .dashboardSubtitle{
+    margin: 4px 0 0 0;
+    font-size: 16px;
+    font-weight: 300;
+    color: #787571;
+}
+
+.dashboardPage .dashboardPeriod{
+    align-self: flex-start;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 300;
+    color: #787571;
+    background-color: #eee8e2;
+    border-radius: 999px;
+}
+
+.dashboardPage .dashboardFilters{
+    margin-top: 20px;
+}
+
+.dashboardPage .dashboardSelect{
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #fffefe;
+    border: 1px solid #d2c3c3;
+    border-radius: 4px;
+}
+
+.dashboardPage .dashboardSelect select{
+    width: 100%;
+    padding: 8px 40px 8px 12px;
+    border: none;
+    background-color: transparent;
+    color: #787571;
+    font-family: Poppins;
+    font-size: 14px;
+    font-weight: 300;
+    appearance: none;
+    cursor: pointer;
+}
+
+.dashboardPage .dashboardSelect select:focus{
+    outline: none;
+}
+
+.dashboardPage .dashboardSelectIcon{
+    position: absolute;
+    right: 12px;
+    pointer-events: none;
+}
+
+.dashboardPage .dashboardExport{
+    padding: 8px 24px;
+    font-family: Poppins;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fffaf5;
+    background-color: #73980d;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dashboardPage .dashboardExport:hover{
+    background-color: #506a07;
+}
+
+.dashboardPage .dashboardKpis{
+    margin-top: 24px;
+}
+
+.dashboardPage .dashboardCharts{
+    margin-top: 24px;
+}

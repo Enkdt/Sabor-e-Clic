@@ -1,0 +1,117 @@
+.dishPage{
+    width: 100%;
+    background-color: #fffaf5;
+    font-family: Poppins;
+    overflow: hidden;
+}
+
+.dishPage .dishPageImg{
+    width: 100%;
+    background: linear-gradient(
+        110deg,
+        #536d14 0%,
+        #a7a15c 45%,
+        #ffb52b 100%
+    );
+    background-size: cover;
+    background-position: center;
+}
+
+.dishPage .dishPageInfo{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 16px;
+}
+
+.dishPage .dishPageName{
+    margin: 0;
+    font-weight: 300;
+    color: #191919;
+    text-align: center;
+}
+
+.dishPage .dishPageDescription{
+    max-width: 765px;
+    margin: 8px 0 0 0;
+    font-weight: 300;
+    text-align: center;
+    line-height: 1.4;
+}
+
+.dishPage .dishPageDetails{
+    max-width: 740px;
+    margin: 56px auto 0 auto;
+    padding-bottom: 80px;
+}
+
+.dishPage .dishPageIngredients h2{
+    margin: 0 0 16px 0;
+    font-size: 24px;
+    font-weight: 300;
+}
+
+.dishPage .dishPageIngredients ul{
+    margin: 0;
+    padding-left: 24px;
+    list-style: disc;
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 2;
+}
+
+.dishPage .dishPagePurchase{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.dishPage .dishPagePrice{
+    margin: 0;
+    font-size: 24px;
+    font-weight: 300;
+}
+
+.dishPage .dishPageQuantity{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 320px;
+    box-sizing: border-box;
+    padding: 12px 16px;
+    border: 2px solid #ffac11;
+    border-radius: 4px;
+    color: #ffac11;
+    font-size: 24px;
+    font-weight: 300;
+    cursor: text;
+}
+
+.dishPage .dishPageQuantity input{
+    width: 64px;
+    border: none;
+    background-color: transparent;
+    color: #ffac11;
+    font-family: Poppins;
+    font-size: 24px;
+    font-weight: 300;
+    text-align: right;
+    appearance: textfield;
+}
+
+.dishPage .dishPageQuantity input:focus{
+    outline: none;
+}
+
+.dishPage .dishPageQuantity input::-webkit-outer-spin-button,
+.dishPage .dishPageQuantity input::-webkit-inner-spin-button{
+    appearance: none;
+    margin: 0;
+}
+
+.dishPage .dishPagePurchase .nextBtn{
+    margin: 0;
+    max-width: 320px;
+}

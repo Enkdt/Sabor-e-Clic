@@ -13,6 +13,13 @@ import { AdcEstoque } from './AdcEstoque';
 import { Carrinho } from './Carrinho';
 import { EmailVerification } from './EmailVerification';
 import { AuthProvider } from './AuthProvider';
+import { Restaurant } from './Restaurant';
+import { Dish } from './Dish';
+import { Order } from './Order';
+import { Profile } from './Profile';
+import { Stock } from './Manager/Stock';
+import { StockAdd } from './Manager/StockAdd';
+import { Dashboard } from './Manager/Dashboard';
 
 /*Mudar isso depois pra ver como ficará melhor*/
 function ProtectedRoute({ children, allowedRoles }) {
@@ -64,8 +71,9 @@ function AppToolbar() {
 
 function Protected({ children, roles }) { return <ProtectedRoute allowedRoles={roles}>{children}</ProtectedRoute>; }
 
+
 function App() {
- return (
+return (
     <AuthProvider>
     <AppToolbar />
     <Routes>
@@ -80,6 +88,13 @@ function App() {
       <Route path='/carrinho' element={<Protected><Carrinho/></Protected>}/>
       <Route path='/recuperar-senha' element={<PasswordRecovery/>}/>
       <Route path='/redefinir-senha' element={<PasswordReset/>}/>
+      <Route path='/restaurante/:id' element={<Restaurant/>}/>
+      <Route path='/prato/:id' element={<Dish/>}/>
+      <Route path='/pedido' element={<Order/>}/>
+      <Route path='/perfil' element={<Profile/>}/>
+      <Route path='/gerente/estoque' element={<Stock/>}/>
+      <Route path='/gerente/estoque/adicionar' element={<StockAdd/>}/>
+      <Route path='/gerente/dashboard' element={<Dashboard/>}/>
     </Routes>
     </AuthProvider>
   )

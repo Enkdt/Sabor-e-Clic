@@ -1,0 +1,88 @@
+.orderCard{
+    padding: 12px;
+    background-color: #ece8e2;
+    border-radius: 2px;
+    font-family: Poppins;
+}
+
+.orderCard .orderCardIcon{
+    flex-shrink: 0;
+    width: 100px;
+    height: 100px;
+    background-color: #73980d;
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%;
+}
+
+.orderCard .orderCardInfo{
+    flex: 1;
+}
+
+.orderCard .orderCardInfo p{
+    margin: 0;
+}
+
+.orderCard .orderCardName{
+    font-size: 20px;
+    font-weight: 400;
+}
+
+.orderCard .orderCardDate,
+.orderCard .orderCardLabel{
+    font-size: 14px;
+    font-weight: 300;
+    color: #787571;
+}
+
+.orderCard .orderCardItems{
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 300;
+    color: #787571;
+}
+
+.orderCard .orderCardSide{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.orderCard .orderCardStatus{
+    padding: 2px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #fffaf5;
+    background-color: #ffac11;
+    border-radius: 999px;
+}
+
+.orderCard .orderCardStatus.delivered{
+    background-color: #73980d;
+}
+
+.orderCard .orderCardTotal{
+    margin: 0;
+    font-size: 18px;
+    font-weight: 300;
+}
+
+.orderCard .orderCardRate{
+    min-width: 120px;
+    padding: 4px 16px;
+    font-family: Poppins;
+    font-size: 14px;
+    font-weight: 400;
+    color: #191919;
+    background-color: #fffefe;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.orderCard .orderCardRate:hover{
+    color: #fffaf5;
+    background-color: #73980d;
+}

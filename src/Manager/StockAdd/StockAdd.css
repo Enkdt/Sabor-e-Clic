@@ -1,0 +1,91 @@
+.stockAddPage{
+    width: 100%;
+    min-height: 100vh;
+    background-color: #fffaf5;
+    font-family: Poppins;
+}
+
+.stockAddPage .stockAddForm{
+    max-width: 1200px;
+    margin: 48px auto;
+    box-sizing: border-box;
+    background-color: #fffefe;
+    box-shadow: 0 0 32px 3px rgba(0, 0, 0, 0.08);
+}
+
+.stockAddPage .stockAddForm h1{
+    margin: 0;
+    font-weight: 300;
+    text-align: center;
+    color: #191919;
+}
+
+.stockAddPage .stockAddForm form{
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+}
+
+.stockAddPage .stockAddForm .loginInputField{
+    max-width: none;
+}
+
+.stockAddPage .stockAddForm .loginInput{
+    padding: 8px 12px;
+    font-size: 18px;
+    border-color: #ecd4e0;
+}
+
+.stockAddPage .stockAddForm .loginInput:focus{
+    border-color: #73980d;
+}
+
+.stockAddPage .stockAddSelects{
+    margin-top: 40px;
+}
+
+.stockAddPage .stockAddField label{
+    display: block;
+    margin-bottom: 4px;
+    font-size: 24px;
+    font-weight: 300;
+}
+
+.stockAddPage .stockAddSelect{
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #f2f2f2;
+    border-radius: 4px;
+}
+
+.stockAddPage .stockAddSelect select{
+    width: 100%;
+    padding: 8px 40px 8px 16px;
+    border: none;
+    background-color: transparent;
+    color: #3d3d3d;
+    font-family: Poppins;
+    font-size: 18px;
+    font-weight: 300;
+    appearance: none;
+    cursor: pointer;
+}
+
+.stockAddPage .stockAddSelect select:focus{
+    outline: none;
+}
+
+.stockAddPage .stockAddSelectIcon{
+    position: absolute;
+    right: 12px;
+    font-size: 22px;
+    pointer-events: none;
+}
+
+.stockAddPage .stockAddForm .nextBtn{
+    align-self: center;
+    margin: 64px 0 24px 0;
+    max-width: 590px;
+    padding: 8px 0;
+}

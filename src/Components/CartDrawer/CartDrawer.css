@@ -1,0 +1,129 @@
+.cartDrawerOverlay{
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: flex-end;
+    background-color: rgba(25, 25, 25, 0.35);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.cartDrawerOverlay.open{
+    opacity: 1;
+    visibility: visible;
+}
+
+.cartDrawer{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 500px;
+    height: 100%;
+    box-sizing: border-box;
+    background-color: #fffaf5;
+    font-family: Poppins;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+}
+
+.cartDrawerOverlay.open .cartDrawer{
+    transform: translateX(0);
+}
+
+.cartDrawer .cartDrawerHeader{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+}
+
+.cartDrawer .cartDrawerHeader h2{
+    margin: 0;
+    font-size: 32px;
+    font-weight: 300;
+}
+
+.cartDrawer .cartDrawerClose{
+    display: flex;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    color: #73980d;
+    font-size: 26px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.cartDrawer .cartDrawerClose:hover{
+    color: #506a07;
+}
+
+.cartDrawer .cartDrawerList{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px 16px 16px;
+    overflow-y: auto;
+}
+
+.cartDrawer .cartDrawerList .cartItem{
+    background-color: #ece8e2;
+    border-radius: 2px;
+}
+
+.cartDrawer .cartDrawerEmpty{
+    margin: 24px 0;
+    text-align: center;
+    font-weight: 300;
+    color: #787571;
+}
+
+.cartDrawer .cartDrawerFooter{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 24px 24px;
+    border-top: 1px solid #73980d;
+}
+
+.cartDrawer .cartDrawerTotal{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 28px;
+    font-weight: 300;
+}
+
+.cartDrawer .cartDrawerLink{
+    display: block;
+}
+
+.cartDrawer .cartDrawerFooter .nextBtn,
+.cartDrawer .cartDrawerBack{
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    font-size: 22px;
+    padding: 8px 0;
+}
+
+.cartDrawer .cartDrawerBack{
+    font-family: Poppins;
+    font-weight: 300;
+    color: #73980d;
+    background-color: #fffefe;
+    border: 1px solid #73980d;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cartDrawer .cartDrawerBack:hover{
+    background-color: #73980d;
+    color: #fffaf5;
+}

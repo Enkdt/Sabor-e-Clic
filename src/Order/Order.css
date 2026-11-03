@@ -1,0 +1,124 @@
+.orderPage{
+    width: 100%;
+    min-height: 100vh;
+    background-color: #fffaf5;
+    font-family: Poppins;
+}
+
+.orderPage .orderContent{
+    max-width: 1440px;
+    margin: 0 auto;
+    padding-top: 24px;
+    padding-bottom: 80px;
+    box-sizing: border-box;
+}
+
+.orderPage .orderTitle{
+    margin: 0 0 8px 0;
+    font-weight: 400;
+    color: #191919;
+}
+
+.orderPage .orderList{
+    display: flex;
+    flex-direction: column;
+    align-self: start;
+    gap: 48px;
+    padding: 4px 8px;
+    background-color: #ece8e2;
+}
+
+.orderPage .orderList .cartItem{
+    gap: 4px;
+}
+
+.orderPage .orderList .cartItemImg{
+    width: clamp(88px, 22vw, 140px);
+    height: clamp(88px, 22vw, 140px);
+}
+
+.orderPage .orderList .cartItemName{
+    font-size: clamp(18px, 5vw, 24px);
+    font-weight: 300;
+}
+
+.orderPage .orderList .cartItemPrice{
+    font-size: clamp(18px, 5vw, 24px);
+}
+
+.orderPage .orderList .quantityStepper{
+    height: 38px;
+}
+
+.orderPage .orderSummary{
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    box-sizing: border-box;
+    border: 2px solid #73980d;
+    border-radius: 8px;
+}
+
+.orderPage .orderSummary h2{
+    margin: 0;
+    font-size: 32px;
+    font-weight: 400;
+}
+
+.orderPage .orderAddress{
+    margin: 8px 0 56px 0;
+    font-size: 26px;
+    font-weight: 300;
+    color: #9a9a9a;
+}
+
+.orderPage .orderValues{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.orderPage .orderValues div{
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 26px;
+    font-weight: 300;
+    color: #9a9a9a;
+}
+
+.orderPage .orderValues .orderTotal{
+    font-size: 28px;
+    font-weight: 400;
+    color: #191919;
+}
+
+.orderPage .orderActions{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid #73980d;
+}
+
+.orderPage .orderActions .nextBtn{
+    margin: 0;
+    max-width: 400px;
+    font-size: 32px;
+    padding: 8px 0;
+}
+
+.orderPage .orderAddMore{
+    margin-top: 20px;
+    color: #9a9a9a;
+    font-size: 16px;
+    font-weight: 300;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.orderPage .orderAddMore:hover{
+    color: #73980d;
+    text-decoration: underline;
+}

@@ -8,7 +8,12 @@
     border-radius: 4px;
     display: flex;
     gap: 12px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
 
+.restaurantCard:hover{
+    box-shadow: 0 0 16px 3px rgba(0,0,0,0.04);
 }
 
 .restaurantCard .restaurantIcon{
@@ -40,6 +45,11 @@
     color: #c4bcb2;
     cursor: pointer;
     transition: all 0.15s ease;
+    border-radius: 50%;
+}
+
+.restaurantCard .restaurantFavIcon:hover{
+    background-color: #dad4cf;
 }
 
 .restaurantCard .restaurantFavIcon.activated{

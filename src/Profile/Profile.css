@@ -1,0 +1,121 @@
+.profilePage{
+    width: 100%;
+    min-height: 100vh;
+    background-color: #fffaf5;
+    font-family: Poppins;
+}
+
+.profilePage .profileHero{
+    width: 100%;
+    background: linear-gradient(
+        110deg,
+        #536d14 0%,
+        #a7a15c 45%,
+        #ffb52b 100%
+    );
+}
+
+.profilePage .profileContent{
+    padding-bottom: 80px;
+}
+
+.profilePage .profileAvatar{
+    flex-shrink: 0;
+    width: 180px;
+    height: 180px;
+    margin-top: -90px;
+    background-color: #ffac11;
+    background-size: cover;
+    background-position: center;
+    border: 6px solid #fffaf5;
+    border-radius: 50%;
+}
+
+.profilePage .profileInfo h1{
+    margin: 0;
+    font-weight: 300;
+    color: #191919;
+}
+
+.profilePage .profileInfo p{
+    margin: 0;
+    font-size: 18px;
+    font-weight: 300;
+    color: #787571;
+}
+
+.profilePage .profileManage{
+    padding: 14px 32px;
+    font-family: Poppins;
+    font-size: 22px;
+    font-weight: 300;
+    color: #191919;
+    background-color: #fffefe;
+    border: 1px solid #c4bcb2;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.profilePage .profileManage:hover{
+    color: #73980d;
+    border-color: #73980d;
+}
+
+.profilePage .profileStats{
+    margin-top: 40px;
+}
+
+.profilePage .profileStat{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background-color: #fffefe;
+    border-radius: 8px;
+    box-shadow: 0 0 32px 3px rgba(0, 0, 0, 0.06);
+}
+
+.profilePage .profileStatIcon{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    color: #73980d;
+    background-color: #eee8e2;
+    border-radius: 50%;
+    font-size: 24px;
+}
+
+.profilePage .profileStatValue{
+    margin: 0;
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1.1;
+}
+
+.profilePage .profileStatLabel{
+    margin: 0;
+    font-size: 14px;
+    font-weight: 300;
+    color: #787571;
+}
+
+.profilePage .profileOrders{
+    margin-top: 40px;
+    padding: 24px;
+    border: 1px solid #c4bcb2;
+    border-radius: 8px;
+}
+
+.profilePage .profileOrders h2{
+    margin: 0 0 24px 0;
+    font-weight: 300;
+}
+
+.profilePage .profileOrdersList{
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}

@@ -16,7 +16,13 @@ export const RestaurantCard=({restaurantName,tag1,tag2})=>{
                     <li>{`#${tag2}`}</li>
                 </ul>
             </div>
-            <HeartIcon onClick={()=>setFavToggle(!FavToggle)} className={`restaurantFavIcon ${FavToggle ? "activated animate__animated animate__bounceIn" : ""}`} size={24} weight='fill'/>
+            <HeartIcon onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setFavToggle(!FavToggle);
+                }} 
+                className={`restaurantFavIcon ${FavToggle ? "activated animate__animated animate__bounceIn" : ""}`} 
+                size={24} weight='fill'/>
         </div>
     )
 }

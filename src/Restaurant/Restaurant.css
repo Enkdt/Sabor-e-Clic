@@ -1,0 +1,132 @@
+.restaurantPage {
+    width: 100%;
+    background-color: #fffaf5;
+    overflow: hidden;
+}
+
+/* Banner superior */
+
+.restaurantPageBanner {
+    position: relative;
+    width: 100%;
+
+    /* Placeholder até você colocar a imagem do banner */
+    background: linear-gradient(
+        110deg,
+        #536d14 0%,
+        #a7a15c 45%,
+        #ffb52b 100%
+    );
+
+    background-size: cover;
+    background-position: center;
+}
+
+/* Botão de favoritos */
+
+.restaurantPageFavorite {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+    padding: 0;
+
+    background-color: #fffaf5;
+    color: #719b0b;
+
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+
+.restaurantPageFavorite svg {
+    width: 27px;
+    height: 27px;
+}
+
+.restaurantPageFavorite:hover {
+    transform: scale(1.1);
+    color: #ff6b6b;
+}
+
+/* Área de informações */
+
+.restaurantPageInfo {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    min-height: 140px;
+    padding: 80px 20px 48px;
+
+    background-color: #fffaf5;
+}
+
+/* Círculo que fica sobre o banner */
+
+.restaurantPageLogo {
+    position: absolute;
+    top: -144px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 220px;
+    height: 220px;
+
+    background-color: #719b0b;
+    border-radius: 50%;
+
+    /* Depois você pode colocar a imagem da logo aqui */
+    background-size: cover;
+    background-position: center;
+}
+
+/* Nome do restaurante */
+
+.restaurantPageName {
+    margin: 0;
+
+    color: #191919;
+    font-family: "Poppins", sans-serif;
+    font-weight: 300;
+    line-height: 1.4;
+
+    text-align: center;
+}
+
+/* Estrelas da avaliação */
+
+.restaurantPageRating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    margin-top: 3px;
+    color: #ffa900;
+}
+
+.restaurantPageRating svg {
+    width: 23px;
+    height: 23px;
+}
+
+/* Cardápio */
+
+.restaurantPageMenu {
+    padding-top: 88px;
+    padding-bottom: 80px;
+}

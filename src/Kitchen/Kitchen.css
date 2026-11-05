@@ -1,0 +1,151 @@
+.kitchenPage{
+    min-height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.kitchenContent{
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+    font-family: Poppins, system-ui, sans-serif;
+}
+
+.kitchenContent h1{
+    font-size: clamp(28px, 4vw, 36px);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.kitchenSubtitle{
+    color: var(--muted-text-color);
+    margin: .4rem 0 1.5rem;
+    max-width: 60ch;
+}
+
+.kitchenList{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.kitchenCard{
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    background: var(--surface-color);
+    border: 1px solid color-mix(in srgb, var(--muted-text-color) 30%, transparent);
+    border-radius: .75rem;
+    padding: 1rem 1.25rem;
+}
+
+.kitchenCardImg{
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+    border-radius: .5rem;
+    background: color-mix(in srgb, var(--brand-color) 16%, transparent);
+    background-size: cover;
+    background-position: center;
+}
+
+.kitchenCardInfo{
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    flex: 1;
+    min-width: 200px;
+}
+
+.kitchenCardInfo h2{
+    font-weight: 400;
+    font-size: 1.15rem;
+    margin: 0;
+}
+
+.kitchenCardMeta{
+    color: var(--muted-text-color);
+    font-size: .9rem;
+}
+
+.kitchenBadge{
+    align-self: flex-start;
+    font-size: .8rem;
+    padding: .15rem .6rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--muted-text-color) 20%, transparent);
+    color: var(--text-color);
+}
+
+.kitchenBadge--confirmado{
+    background: color-mix(in srgb, var(--brand-color) 22%, transparent);
+    color: var(--brand-color);
+}
+
+.kitchenCardActions{
+    display: flex;
+    gap: .5rem;
+    align-items: flex-start;
+}
+
+.kitchenConfirm,
+.kitchenDeny,
+.kitchenCancel{
+    font: inherit;
+    font-size: .95rem;
+    cursor: pointer;
+    padding: .5rem 1rem;
+    border-radius: .4rem;
+    border: 1px solid transparent;
+}
+
+.kitchenConfirm{
+    background: var(--brand-color);
+    color: var(--bg-color);
+    border-color: var(--brand-color);
+}
+
+.kitchenConfirm:hover:not(:disabled){ background: var(--brand-hover); border-color: var(--brand-hover); }
+
+.kitchenDeny{
+    background: transparent;
+    color: #b3261e;
+    border-color: #b3261e;
+}
+
+.kitchenCancel{
+    background: transparent;
+    color: var(--text-color);
+    border-color: var(--muted-text-color);
+}
+
+.kitchenConfirm:disabled,
+.kitchenDeny:disabled{ opacity: .6; cursor: not-allowed; }
+
+.kitchenDenyBox{
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    min-width: 240px;
+}
+
+.kitchenDenyBox input{
+    font: inherit;
+    padding: .5rem;
+    border-radius: .35rem;
+    border: 1px solid var(--muted-text-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.kitchenDenyActions{
+    display: flex;
+    gap: .5rem;
+}
+
+.kitchenError{ color: #b3261e; }
+:root[data-theme="dark"] .kitchenError{color:#ff8b82}
+:root[data-theme="dark"] .kitchenDeny{color:#ff8b82;border-color:#ff8b82}
+@media (prefers-color-scheme: dark){:root[data-theme="system"] .kitchenError{color:#ff8b82}}

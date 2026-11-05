@@ -1,4 +1,8 @@
 import logging
+import re
+import unicodedata
+
+from threading import Thread
 from flask import current_app, jsonify, render_template_string
 
 # Para tokens. Mover depois, se necessário.
@@ -60,8 +64,23 @@ def sendEmail(Subject:str,recipient:str,content:str,HTMLcontent:str):
     message.html = HTMLcontent
     mail.send(message)
 
+
+def sendEmailAsync(app, Subject, recipient, content, HTMLcontent):
+    # Envia o email fora do ciclo requisição/resposta; falha de SMTP é registrada sem parar o serviço
+    with app.app_context():
+        try:
+            sendEmail(Subject, recipient, content, HTMLcontent)
+        except Exception:
+            logger.exception("Falha ao enviar email para %s.", recipient)
+
+
 def sendAuthEmail(recipient:str):
-    """Função de envio de email de autenticação ao usuário"""
+    """Dispara, em segundo plano, o email de autenticação da conta ao usuário.
+
+    O link/token é gerado na requisição (precisa de current_app); o envio SMTP
+    roda em uma thread para que lentidão ou falha do servidor de email nunca
+    quebre o cadastro (o usuário pode revalidar o email depois).
+    """
 
     token = generateToken(recipient,"user validation",15)
     verificationLink = (
@@ -76,5 +95,17 @@ def sendAuthEmail(recipient:str):
         <p>{{link}}</p>
     ''', link=verificationLink)
 
-    sendEmail(subject,recipient,content,htmlContent)
+    Thread(
+        target=sendEmailAsync,
+        args=(current_app._get_current_object(), subject, recipient, content, htmlContent),
+        daemon=True,
+    ).start()
 
+
+
+
+def slugify(texto: str) -> str:
+    """Gera um slug ASCII a partir de um nome (ex.: 'Cantina São José' -> 'cantina-sao-jose')."""
+    normalizado = unicodedata.normalize("NFKD", texto or "").encode("ascii", "ignore").decode("ascii")
+    normalizado = re.sub(r"[^a-zA-Z0-9]+", "-", normalizado).strip("-").lower()
+    return normalizado or "restaurante"

@@ -1,0 +1,112 @@
+.kitchenOverviewPage{
+    min-height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.kitchenOverviewContent{
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem 4rem;
+    font-family: Poppins, system-ui, sans-serif;
+}
+
+.kitchenOverviewContent h1{
+    font-weight: 300;
+    font-size: clamp(30px, 4.5vw, 42px);
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.kitchenOverviewSub{
+    color: var(--muted-text-color);
+    margin: .4rem 0 2rem;
+}
+
+.kitchenOverviewQueue{
+    display: inline-flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .9rem 1.25rem;
+    margin-bottom: 2rem;
+    border-radius: .6rem;
+    background: color-mix(in srgb, var(--brand-color) 14%, var(--surface-color));
+    color: var(--text-color);
+    text-decoration: none;
+    border: 1px solid color-mix(in srgb, var(--brand-color) 40%, transparent);
+    transition: border-color .15s ease;
+}
+
+.kitchenOverviewQueue:hover{ border-color: var(--brand-color); }
+
+.kitchenOverviewQueueNum{
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--brand-color);
+    line-height: 1;
+}
+
+.kitchenOverviewGrid{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.kitchenOverviewCard{
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: .7rem;
+    background: var(--surface-color);
+    border: 1px solid color-mix(in srgb, var(--muted-text-color) 25%, transparent);
+}
+
+.kitchenOverviewCardImg{
+    height: 130px;
+    background: color-mix(in srgb, var(--brand-color) 16%, transparent);
+    background-size: cover;
+    background-position: center;
+}
+
+.kitchenOverviewCardBody{
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    padding: 1.1rem 1.25rem 1.3rem;
+}
+
+.kitchenOverviewCardBody h2{
+    margin: 0;
+    font-weight: 400;
+    font-size: 1.25rem;
+}
+
+.kitchenOverviewStat{
+    margin: 0;
+    color: var(--muted-text-color);
+    font-size: .95rem;
+}
+
+.kitchenOverviewLinks{
+    display: flex;
+    gap: 1rem;
+    margin-top: .5rem;
+}
+
+.kitchenOverviewLinks a{
+    font-size: .95rem;
+    color: var(--brand-color);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color .15s ease;
+}
+
+.kitchenOverviewLinks a:hover{ border-bottom-color: var(--brand-color); }
+
+.kitchenOverviewEmpty{
+    color: var(--muted-text-color);
+    max-width: 48ch;
+}

@@ -126,8 +126,25 @@ def login():
     logger.info("Login realizado com sucesso.")
     return jsonify({
         "success": True,
-        "user": {"id": user.id, "nome": user.nome, "email": user.email, "role": role},
+        "user": _user_payload(user, role),
     }), 200
+
+
+def _user_payload(user, role):
+    """Payload do usuário para login/sessão. Inclui avatar e, para cozinheiro, os restaurantes filiados."""
+    import storage
+    dados = {"id": user.id, "nome": user.nome, "email": user.email, "role": role}
+    perfil = user.cozinheiro or user.funcionario or user.cliente
+    avatar = getattr(perfil, "avatar", None) if perfil else None
+    dados["avatar"] = storage.url_for_key(avatar) if avatar else None
+    if role == "customer" and user.cliente:
+        dados["saldo"] = str(user.cliente.saldo)
+    if role == "cook" and user.cozinheiro:
+        dados["restaurantes"] = [
+            {"id": r.id, "nome": r.nome, "slug": r.slug}
+            for r in user.cozinheiro.restaurantes
+        ]
+    return dados
 
 
 @auth_bp.get('/session')
@@ -135,7 +152,7 @@ def login():
 def validar_sessao():
     return jsonify({
         "success": True,
-        "user": {"id": g.current_user.id, "nome": g.current_user.nome, "email": g.current_user.email, "role": g.current_role},
+        "user": _user_payload(g.current_user, g.current_role),
     }), 200
 
 
@@ -197,6 +214,14 @@ def cadastro():
             status = 409
         ) 
 
+    if CRUD.read.usuario_por_email(f_info['email']) is not None:
+        logger.warning("Cadastro recusado: e-mail já registrado.")
+        return err_json(
+            code="USER_EXISTS",
+            message="Email já está registrado.",
+            status=409
+        )
+
     try:
         CRUD.create.cliente_com_endereco(
             nome=f"{f_info['name']} {f_info['surname']}",
@@ -212,11 +237,11 @@ def cadastro():
             complemento=f_info.get('extra') or None
         )
     except ValueError:
-        logger.warning("Cadastro recusado por dados inválidos ou e-mail já registrado.")
+        logger.warning("Cadastro recusado por dados inválidos.")
         return err_json(
-            code="USER_EXISTS",
-            message="Email já está registrado.",
-            status=409
+            code="INVALID_DATA",
+            message="Não foi possível cadastrar: verifique os dados informados.",
+            status=400
         )    
     except IntegrityError:
         logger.warning("Conflito de integridade durante o cadastro.")
@@ -289,6 +314,45 @@ def validar_cadastro():
         "success": True,
         "message": "Email validado com sucesso",
         "user": {"email": user.email}
+    }), 200
+
+
+@auth_bp.post('/cadastro/reenviar-validacao')
+@limiter.limit("3 per hour")
+def reenviar_validacao():
+    data = request.get_json(silent=True)
+    if not val.check_json(data):
+        logger.warning("Reenvio de validação recusado por conteúdo JSON inválido.")
+        return err_json(
+            code="INVALID_JSON",
+            message="Envie os dados em formato JSON válido.",
+            status=400,
+        )
+
+    email_input = data.get("email")
+    email = email_input.strip() if isinstance(email_input, str) else ""
+    if not val.check_email(email):
+        logger.warning("Reenvio de validação recusado por formato de e-mail inválido.")
+        return err_json(
+            code="VALIDATION_FAILED",
+            message="Informe um email válido.",
+            fields={"email": "Email inválido"},
+            status=400,
+        )
+
+    # O email só é reenviado quando a conta existe E ainda não foi verificada.
+    # A resposta é sempre genérica para não revelar quais emails estão cadastrados
+    # nem quais já foram validados (evita enumeração de contas).
+    user = CRUD.read.usuario_por_email(email)
+    if user is not None and not user.email_verificado:
+        logger.info("Conta não verificada encontrada; reenviando email de validação.")
+        sendAuthEmail(user.email)
+    else:
+        logger.info("Reenvio de validação ignorado: conta inexistente ou já verificada.")
+
+    return jsonify({
+        "success": True,
+        "message": "Se houver uma conta não verificada com este email, enviaremos um novo link de validação.",
     }), 200
 
 

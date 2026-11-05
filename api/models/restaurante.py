@@ -21,12 +21,15 @@ class Restaurante(db.Model):
     __tablename__ = 'restaurante'
     id: Mapped[int] = mapped_column(primary_key=True)
     nome: Mapped[str] = mapped_column(String(30), nullable=False)
+    slug: Mapped[str | None] = mapped_column(String(60), unique=True, nullable=True)
     receita_total: Mapped[float] = mapped_column(Numeric(10,2), nullable=False, default=0)
     ticket_medio: Mapped[float] = mapped_column(Numeric(10,2), nullable=False, default=0)
     pedidos_total: Mapped[int] = mapped_column(nullable=False, default=0)
     vendas_total: Mapped[int] = mapped_column(nullable=False, default=0)
     itens_estoque: Mapped[int] = mapped_column(nullable=False, default=0)
+    imagem: Mapped[str | None] = mapped_column(String(100), nullable=True)
     categorias: Mapped[list['Categoria']] = relationship(secondary=restaurante_categoria, back_populates='restaurantes')
+    cozinheiros: Mapped[list['Cozinheiro']] = relationship(secondary='cozinheiro_restaurante', back_populates='restaurantes')
     prato: Mapped[list['Prato']] = relationship(back_populates='restaurante')
     restaurante_endereco: Mapped[list['RestauranteEndereco']] = relationship(back_populates='restaurante')
 
@@ -48,8 +51,11 @@ class Prato(db.Model):
     id_restaurante: Mapped[int] = mapped_column(ForeignKey('restaurante.id'))
     id_cardapio: Mapped[int] = mapped_column(ForeignKey('cardapio.id'))
     nome: Mapped[str] = mapped_column(String(50), nullable=False)
+    slug: Mapped[str | None] = mapped_column(String(70), nullable=True)
     preco_unidade: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
     quantidade: Mapped[int] = mapped_column(nullable=False)
+    descricao: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    imagem: Mapped[str | None] = mapped_column(String(100), nullable=True)
     restaurante: Mapped['Restaurante'] = relationship(back_populates='prato')
     cardapio: Mapped['Cardapio'] = relationship(back_populates='prato')
     associacao_pedido: Mapped[list['PedidoPrato']] = relationship(back_populates='prato')
@@ -71,4 +77,5 @@ class Ingrediente(db.Model):
     validade: Mapped[date] = mapped_column(nullable=False)
     unidade: Mapped[str] = mapped_column(String(10), nullable=False) # Exemplos: KG, G, L e ML.
     quantidade: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
+    imagem: Mapped[str | None] = mapped_column(String(100), nullable=True)
     associacao: Mapped[list['PratoIngrediente']] = relationship(back_populates='ingrediente')

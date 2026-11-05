@@ -7,6 +7,7 @@ import { Input } from '../../Components/Input';
 import './LoginForm.css';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../authContext';
+import { resendValidationEmail } from '../../authSession';
 export const LoginForm=()=>{
 
     const navigate=useNavigate();
@@ -15,10 +16,16 @@ export const LoginForm=()=>{
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');
     const [error,setError]=useState('');
+    const [needsVerification,setNeedsVerification]=useState(false);
+    const [resendState,setResendState]=useState('idle'); // idle | sending | sent | error
+    const [resendMessage,setResendMessage]=useState('');
 
     const loginLogic = async (e) => {
         e.preventDefault();
         setError('');
+        setNeedsVerification(false);
+        setResendState('idle');
+        setResendMessage('');
 
         try {
             await authenticate(email, password);
@@ -26,6 +33,23 @@ export const LoginForm=()=>{
             navigate(typeof destination === 'string' && destination.startsWith('/') && !destination.startsWith('//') ? destination : '/');
         } catch (error) {
             setError(error.message);
+            if (error.code === 'EMAIL_NOT_VERIFIED') {
+                setNeedsVerification(true);
+            }
+        }
+    }
+
+    const resendLogic = async () => {
+        if (resendState === 'sending') return;
+        setResendState('sending');
+        setResendMessage('');
+        try {
+            const data = await resendValidationEmail(email);
+            setResendState('sent');
+            setResendMessage(data.message || 'Se houver uma conta não verificada com este email, enviaremos um novo link de validação.');
+        } catch (error) {
+            setResendState('error');
+            setResendMessage(error.message);
         }
     }
 
@@ -72,6 +96,28 @@ return (
                     </div>
                 ))}
                 <NextBtn text="Continuar"/>
+
+                {needsVerification && (
+                    <div className="resendValidation">
+                        <p className="resendValidationHint">
+                            Seu email ainda não foi validado. Reenvie o link de validação:
+                        </p>
+                        <button
+                            type="button"
+                            className="resendValidationBtn"
+                            onClick={resendLogic}
+                            disabled={resendState === 'sending'}
+                        >
+                            {resendState === 'sending' ? 'Enviando...' : 'Reenviar email de validação'}
+                        </button>
+                        {resendMessage && (
+                            <p className={resendState === 'error' ? 'resendValidationMsg error' : 'resendValidationMsg'}>
+                                {resendMessage}
+                            </p>
+                        )}
+                    </div>
+                )}
+
                 <NavLink to="/recuperar-senha">Esqueceu a senha?</NavLink>
             </form>
 

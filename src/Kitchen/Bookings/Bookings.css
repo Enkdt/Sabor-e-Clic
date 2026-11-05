@@ -1,0 +1,88 @@
+.bookingsPage{
+    min-height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.bookingsContent{
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+    font-family: Poppins, system-ui, sans-serif;
+}
+
+.bookingsContent h1{
+    font-size: clamp(28px, 4vw, 36px);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.bookingsSub{
+    color: var(--muted-text-color);
+    margin: .4rem 0 1.5rem;
+}
+
+.bookingsList{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.bookingCard{
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    background: var(--surface-color);
+    border: 1px solid color-mix(in srgb, var(--muted-text-color) 30%, transparent);
+    border-radius: .6rem;
+}
+
+.bookingInfo{
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+}
+
+.bookingMeta{ color: var(--muted-text-color); font-size: .9rem; }
+
+.bookingActions,
+.bookingDenyActions{ display: flex; gap: .5rem; }
+
+.bookingDenyBox{ display: flex; flex-direction: column; gap: .5rem; min-width: 240px; }
+
+.bookingDenyBox input{
+    font: inherit;
+    padding: .5rem;
+    border-radius: .35rem;
+    border: 1px solid var(--muted-text-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.bookingAccept,
+.bookingDeny,
+.bookingCancel{
+    font: inherit;
+    font-size: .95rem;
+    cursor: pointer;
+    padding: .5rem 1rem;
+    border-radius: .4rem;
+    border: 1px solid transparent;
+}
+
+.bookingAccept{ background: var(--brand-color); color: var(--bg-color); border-color: var(--brand-color); }
+.bookingAccept:hover:not(:disabled){ background: var(--brand-hover); border-color: var(--brand-hover); }
+.bookingDeny{ background: transparent; color: #b3261e; border-color: #b3261e; }
+.bookingCancel{ background: transparent; color: var(--text-color); border-color: var(--muted-text-color); }
+.bookingAccept:disabled,.bookingDeny:disabled{ opacity:.6; cursor:not-allowed; }
+
+.bookingsError{ color:#b3261e; }
+:root[data-theme="dark"] .bookingsError,:root[data-theme="dark"] .bookingDeny{ color:#ff8b82; }
+:root[data-theme="dark"] .bookingDeny{ border-color:#ff8b82; }

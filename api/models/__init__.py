@@ -9,10 +9,12 @@ from .usuario import (
     Turno,
     Cliente,
     ClienteEndereco,
+    ClienteFavorito,
     PasswordResetToken,
+    cozinheiro_restaurante,
 )
 
-from .pedido import Pedido
+from .pedido import Pedido, Avaliacao
 
 from .restaurante import (
     Cardapio,

@@ -1,5 +1,6 @@
 .restaurantCard{
-    background-color: #eee8e2;
+    background-color: var(--surface-color);
+    color: var(--text-color);
     max-width: 420px;
     width: 100%;
     max-height: 100px;
@@ -10,6 +11,7 @@
     gap: 12px;
     cursor: pointer;
     transition: all 0.1s ease;
+    border: 1px solid color-mix(in srgb, var(--muted-text-color) 20%, transparent);
 }
 
 .restaurantCard:hover{
@@ -26,6 +28,7 @@
 
 .restaurantCard .restaurantInfo .restaurantName{
     font-family: Poppins;
+    color: var(--text-color);
 }
 
 .restaurantCard .restaurantInfo .restaurantTags{
@@ -34,7 +37,7 @@
     font-family: Poppins;
     font-weight: 300;
     font-style: italic;
-    color: #787571;
+    color: var(--muted-text-color);
     font-size: 14px;
 }
 
@@ -42,18 +45,18 @@
     padding: 0;
     margin-left: auto;
     align-self: flex-start;
-    color: #c4bcb2;
+    color: var(--muted-text-color);
     cursor: pointer;
     transition: all 0.15s ease;
     border-radius: 50%;
 }
 
 .restaurantCard .restaurantFavIcon:hover{
-    background-color: #dad4cf;
+    background-color: color-mix(in srgb, var(--muted-text-color) 25%, transparent);
 }
 
 .restaurantCard .restaurantFavIcon.activated{
-    color: #73980d;
+    color: var(--brand-color);
     animation: favorite-pop 220ms ease-out;
 }
 
@@ -65,4 +68,14 @@
 
 @media (prefers-reduced-motion: reduce) {
     .restaurantCard .restaurantFavIcon.activated { animation: none; }
+}
+
+.restaurantCard .restaurantFavBtn{
+    margin-left: auto;
+    align-self: flex-start;
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    line-height: 0;
 }

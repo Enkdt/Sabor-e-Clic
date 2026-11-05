@@ -6,11 +6,18 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    background-color: #fefefe;
+    background-color: var(--surface-color);
+    color: var(--text-color);
 }
 
 .CardCardapio:hover .pratoCardapio{
     scale: 1.15;
+}
+
+.CardCardapio .cardCardapioImg{
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
 }
 
 .CardCardapio h2{
@@ -61,4 +68,12 @@
 
 .CardCardapio button:hover{
     background-color: #506a07;
+}
+
+.CardCardapio .cardCardapioFeedback{
+    font-family: Poppins;
+    font-weight: 300;
+    font-size: 14px;
+    min-height: 18px;
+    color: var(--brand-color);
 }

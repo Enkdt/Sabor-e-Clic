@@ -23,7 +23,8 @@
     max-width: 500px;
     height: 100%;
     box-sizing: border-box;
-    background-color: #fffaf5;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     font-family: Poppins;
     transform: translateX(100%);
     transition: transform 0.3s ease;
@@ -51,14 +52,14 @@
     padding: 0;
     border: none;
     background-color: transparent;
-    color: #73980d;
+    color: var(--brand-color);
     font-size: 26px;
     cursor: pointer;
     transition: all 0.15s ease;
 }
 
 .cartDrawer .cartDrawerClose:hover{
-    color: #506a07;
+    color: var(--brand-hover);
 }
 
 .cartDrawer .cartDrawerList{
@@ -71,7 +72,7 @@
 }
 
 .cartDrawer .cartDrawerList .cartItem{
-    background-color: #ece8e2;
+    background-color: var(--surface-color);
     border-radius: 2px;
 }
 
@@ -79,7 +80,7 @@
     margin: 24px 0;
     text-align: center;
     font-weight: 300;
-    color: #787571;
+    color: var(--muted-text-color);
 }
 
 .cartDrawer .cartDrawerFooter{
@@ -87,7 +88,7 @@
     flex-direction: column;
     gap: 12px;
     padding: 16px 24px 24px;
-    border-top: 1px solid #73980d;
+    border-top: 1px solid var(--brand-color);
 }
 
 .cartDrawer .cartDrawerTotal{
@@ -115,15 +116,15 @@
 .cartDrawer .cartDrawerBack{
     font-family: Poppins;
     font-weight: 300;
-    color: #73980d;
-    background-color: #fffefe;
-    border: 1px solid #73980d;
+    color: var(--brand-color);
+    background-color: var(--surface-color);
+    border: 1px solid var(--brand-color);
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .cartDrawer .cartDrawerBack:hover{
-    background-color: #73980d;
-    color: #fffaf5;
+    background-color: var(--brand-color);
+    color: var(--bg-color);
 }

@@ -3,8 +3,43 @@ from decimal import Decimal
 
 from app import app
 from models.crud import CRUD
+from utils import slugify
+
+import secrets
+import subprocess
+from pathlib import Path
 
 DEMO_PASSWORD = "SaborDemo123!"
+
+_UPLOAD_DIR = Path(__file__).resolve().parent / "uploads"
+# Paleta por índice para variar as fotos de demonstração.
+_CORES = ["#426700", "#9a5b00", "#7a1f4b", "#1f5a7a", "#8a6d00", "#6a1f7a", "#2f7a3f"]
+
+
+def _placeholder_image(texto, cor):
+    """Gera uma imagem PNG de placeholder (gradiente + rótulo) e devolve a chave salva em uploads/.
+
+    shortcut: imagem gerada localmente para a demo; em produção os cozinheiros/admin sobem fotos reais.
+    """
+    _UPLOAD_DIR.mkdir(exist_ok=True)
+    key = f"seed_{secrets.token_hex(8)}.png"
+    destino = _UPLOAD_DIR / key
+    rotulo = (texto[:22]).replace(":", " ")
+    try:
+        subprocess.run(
+            [
+                "magick", "-size", "600x400",
+                f"gradient:{cor}-#1b1b1b",
+                "-gravity", "center",
+                "-pointsize", "34", "-fill", "white",
+                "-annotate", "0", rotulo,
+                str(destino),
+            ],
+            check=True, capture_output=True, timeout=30,
+        )
+    except (subprocess.SubprocessError, FileNotFoundError):
+        return None
+    return key
 
 RESTAURANTS = [
     {
@@ -23,6 +58,7 @@ RESTAURANTS = [
             "estado": "SP",
         },
         "ingredientes": [("Arroz", "KG", "0.18"), ("Feijão", "KG", "0.12"), ("Carne bovina", "KG", "0.20")],
+        "extras": [("Feijoada completa", Decimal("36.00")), ("Strogonoff de frango", Decimal("30.00"))],
     },
     {
         "nome": "Padaria Demo",
@@ -40,6 +76,7 @@ RESTAURANTS = [
             "estado": "SP",
         },
         "ingredientes": [("Farinha de trigo", "KG", "0.25"), ("Leite", "L", "0.20"), ("Ovo", "UN", "2.00")],
+        "extras": [("Croissant de presunto e queijo", Decimal("12.00")), ("Bolo de cenoura com chocolate", Decimal("8.00"))],
     },
     {
         "nome": "Cantina Italiana Demo",
@@ -57,6 +94,7 @@ RESTAURANTS = [
             "estado": "SP",
         },
         "ingredientes": [("Farinha de trigo", "KG", "0.18"), ("Molho de tomate", "KG", "0.12"), ("Queijo", "KG", "0.08")],
+        "extras": [("Lasanha à bolonhesa", Decimal("42.00")), ("Nhoque ao pesto", Decimal("35.00"))],
     },
     {
         "nome": "Japastel Demo",
@@ -74,6 +112,7 @@ RESTAURANTS = [
             "estado": "SP",
         },
         "ingredientes": [("Arroz japonês", "KG", "0.18"), ("Salmão", "KG", "0.12"), ("Alga nori", "UN", "2.00")],
+        "extras": [("Temaki de salmão", Decimal("28.00")), ("Yakisoba de carne", Decimal("33.00"))],
     },
     {
         "nome": "Taco Demo",
@@ -91,6 +130,7 @@ RESTAURANTS = [
             "estado": "SP",
         },
         "ingredientes": [("Tortilha", "UN", "2.00"), ("Feijão", "KG", "0.08"), ("Carne moída", "KG", "0.12")],
+        "extras": [("Taco de carne", Decimal("22.00")), ("Nachos com guacamole", Decimal("25.00"))],
     },
     {
         "nome": "Garden Demo",
@@ -108,6 +148,7 @@ RESTAURANTS = [
             "estado": "SP",
         },
         "ingredientes": [("Lentilha", "KG", "0.15"), ("Legumes variados", "KG", "0.18"), ("Quinoa", "KG", "0.10")],
+        "extras": [("Wrap vegano de grão-de-bico", Decimal("26.00")), ("Salada caesar vegetariana", Decimal("24.00"))],
     },
     {
         "nome": "Burger Demo",
@@ -125,6 +166,7 @@ RESTAURANTS = [
             "estado": "SP",
         },
         "ingredientes": [("Pão brioche", "UN", "1.00"), ("Carne bovina", "KG", "0.18"), ("Queijo", "KG", "0.03")],
+        "extras": [("Cheeseburger duplo", Decimal("39.90")), ("Batata frita com cheddar e bacon", Decimal("22.00"))],
     },
 ]
 
@@ -201,7 +243,8 @@ ORDERS = [
         "cook": "rafael.cozinha@sabor.test",
         "data": date(2026, 10, 29),
         "quantidade": 2,
-        "status": "pronto",
+        "status": "pago",
+        "metodo_pagamento": "entrega",
         "tempo_estimado": 25,
     },
     {
@@ -219,7 +262,8 @@ ORDERS = [
         "cook": "marcos.nunes@sabor.test",
         "data": date(2026, 10, 31),
         "quantidade": 2,
-        "status": "pronto",
+        "status": "pago",
+        "metodo_pagamento": "pix_entrega",
         "tempo_estimado": 20,
     },
 ]
@@ -327,7 +371,7 @@ def ensure_profile(role, data):
 
 
 def ensure_ingredient(name, unit):
-    return get_or_create(
+    ing = get_or_create(
         CRUD.read.ingredientes,
         CRUD.create.ingrediente,
         {"nome": name},
@@ -336,6 +380,12 @@ def ensure_ingredient(name, unit):
         unidade=unit,
         quantidade=Decimal("50.00"),
     )
+    if not ing.imagem:
+        key = _placeholder_image(name, "#5a4a2a")
+        if key:
+            CRUD.update.ingrediente(ing.id, {"imagem": key})
+            ing = CRUD.read.ingrediente(ing.id)
+    return ing
 
 
 def ensure_dish_ingredient(dish, ingredient, unit, quantity):
@@ -455,6 +505,7 @@ def ensure_order(order_data, customers, cooks, dishes):
             total=total,
             status=order_data["status"],
             tempo_estimado=order_data["tempo_estimado"],
+            metodo_pagamento=order_data.get("metodo_pagamento"),
         )
 
     order_dishes = CRUD.read.pedidos_pratos(filters={
@@ -501,6 +552,7 @@ def seed():
             CRUD.create.restaurante,
             {"nome": data["nome"]},
             nome=data["nome"],
+            slug=slugify(data["nome"]),
         )
         ensure_restaurant_address(restaurant, data["endereco"])
 
@@ -564,12 +616,48 @@ def seed():
                 amount,
             )
 
+        # Pratos adicionais para que cada restaurante tenha >= 3 opções no cardápio.
+        for extra_nome, extra_preco in data.get("extras", []):
+            extras_existentes = CRUD.read.pratos(filters={
+                "id_restaurante": restaurant.id,
+                "id_cardapio": menu.id,
+                "nome": extra_nome,
+            })
+            if extras_existentes:
+                extra_dish = extras_existentes[0]
+            else:
+                extra_dish = CRUD.create.prato(
+                    id_restaurante=restaurant.id,
+                    id_cardapio=menu.id,
+                    nome=extra_nome,
+                    preco_unidade=extra_preco,
+                    quantidade=15,
+                )
+            # Vincula os mesmos ingredientes do prato principal, para a seção nunca ficar vazia.
+            for ingredient_name, unit, amount in data["ingredientes"]:
+                ingredient_key = (ingredient_name, unit)
+                if ingredient_key not in ingredients:
+                    ingredients[ingredient_key] = ensure_ingredient(ingredient_name, unit)
+                ensure_dish_ingredient(extra_dish, ingredients[ingredient_key], unit, amount)
+
         dishes[data["nome"]] = {
             "restaurant": restaurant,
             "menu": menu,
             "dish": dish,
             "price": data["preco"],
         }
+
+        # Fotos de demonstração (geradas localmente) para restaurante e seus pratos, se ainda não têm.
+        cor = _CORES[(restaurant.id - 1) % len(_CORES)]
+        if not restaurant.imagem:
+            key = _placeholder_image(restaurant.nome, cor)
+            if key:
+                CRUD.update.restaurante(restaurant.id, {"imagem": key})
+        for prato in CRUD.read.pratos(filters={"id_restaurante": restaurant.id}):
+            if not prato.imagem:
+                key = _placeholder_image(prato.nome, cor)
+                if key:
+                    CRUD.update.prato(prato.id, {"imagem": key})
 
     customers = {
         data["email"]: ensure_customer(data)
@@ -603,6 +691,15 @@ def seed():
 
     for order_data in ORDERS:
         ensure_order(order_data, customers, cooks, dishes)
+
+    # Filia cada cozinheiro demo a um restaurante (round-robin), para que a tela do cozinheiro
+    # tenha dados reais de gestão de pratos. Idempotente (a associação já evita duplicatas).
+    restaurantes = CRUD.read.restaurantes()
+    cooks_list = list(cooks.values())
+    if restaurantes and cooks_list:
+        for i, restaurante in enumerate(restaurantes):
+            cook = cooks_list[i % len(cooks_list)]
+            CRUD.create.cozinheiro_restaurante(cook.id_usuario, restaurante.id)
 
     bench_addresses = [
         {

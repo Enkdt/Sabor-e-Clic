@@ -1,7 +1,8 @@
 .profilePage{
     width: 100%;
     min-height: 100vh;
-    background-color: #fffaf5;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     font-family: Poppins;
 }
 
@@ -34,14 +35,44 @@
 .profilePage .profileInfo h1{
     margin: 0;
     font-weight: 300;
-    color: #191919;
+    color: var(--text-color);
 }
 
 .profilePage .profileInfo p{
     margin: 0;
     font-size: 18px;
     font-weight: 300;
-    color: #787571;
+    color: var(--muted-text-color);
+}
+
+.profilePage .profileAvatarEdit{
+    margin-top: 12px;
+}
+
+.profilePage .profileRecarga{
+    display: flex;
+    gap: .5rem;
+    margin-top: .5rem;
+}
+
+.profilePage .profileRecarga select{
+    font: inherit;
+    padding: .3rem .5rem;
+    border-radius: .3rem;
+    border: 1px solid var(--muted-text-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.profilePage .profileRecarga button{
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    padding: .3rem .8rem;
+    border-radius: .3rem;
+    border: 1px solid var(--brand-color);
+    background: var(--brand-color);
+    color: var(--bg-color);
 }
 
 .profilePage .profileManage{
@@ -49,17 +80,17 @@
     font-family: Poppins;
     font-size: 22px;
     font-weight: 300;
-    color: #191919;
-    background-color: #fffefe;
-    border: 1px solid #c4bcb2;
+    color: var(--text-color);
+    background-color: var(--surface-color);
+    border: 1px solid var(--muted-text-color);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .profilePage .profileManage:hover{
-    color: #73980d;
-    border-color: #73980d;
+    color: var(--brand-color);
+    border-color: var(--brand-color);
 }
 
 .profilePage .profileStats{
@@ -71,7 +102,7 @@
     align-items: center;
     gap: 16px;
     padding: 16px 20px;
-    background-color: #fffefe;
+    background-color: var(--surface-color);
     border-radius: 8px;
     box-shadow: 0 0 32px 3px rgba(0, 0, 0, 0.06);
 }
@@ -82,8 +113,8 @@
     justify-content: center;
     width: 48px;
     height: 48px;
-    color: #73980d;
-    background-color: #eee8e2;
+    color: var(--brand-color);
+    background-color: color-mix(in srgb, var(--brand-color) 15%, transparent);
     border-radius: 50%;
     font-size: 24px;
 }
@@ -99,13 +130,13 @@
     margin: 0;
     font-size: 14px;
     font-weight: 300;
-    color: #787571;
+    color: var(--muted-text-color);
 }
 
 .profilePage .profileOrders{
     margin-top: 40px;
     padding: 24px;
-    border: 1px solid #c4bcb2;
+    border: 1px solid var(--muted-text-color);
     border-radius: 8px;
 }
 

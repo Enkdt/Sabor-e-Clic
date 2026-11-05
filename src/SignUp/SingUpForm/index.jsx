@@ -80,7 +80,7 @@ export const SignUpForm=()=>{
                     cep,
                     neighborhood: bairro,
                     country: endereco.country?.name || '',
-                    state: endereco.state?.name || '',
+                    state: endereco.state?.state_code || '',
                     city: endereco.city?.name || '',
                     street: rua,
                     number: num,

@@ -1,0 +1,17 @@
+.catalogPage{
+    width: 100%;
+    min-height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: Poppins;
+}
+
+.catalogContent{
+    padding: 24px 16px 80px;
+}
+
+.catalogTitle{
+    margin: 0 0 24px 0;
+    font-weight: 300;
+    font-size: clamp(28px, 4vw, 36px);
+}

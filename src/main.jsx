@@ -3,10 +3,10 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
+import { applyThemePreference, readPreference } from './themeContext.js'
 
-const initialTheme = localStorage.getItem('theme-preference') || 'system'
-document.documentElement.dataset.theme = initialTheme
-document.documentElement.style.colorScheme = initialTheme === 'system' ? '' : initialTheme
+// Aplica o tema antes da primeira pintura para evitar flash.
+applyThemePreference(readPreference())
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { House, Moon, PlantIcon, ShoppingCartIcon, Sun, UserIcon } from '@phosphor-icons/react'
+import { House, Moon, PlantIcon, ShoppingCartIcon, Sun, UserIcon, GearIcon, SquaresFourIcon, CookingPotIcon, ForkKnifeIcon } from '@phosphor-icons/react'
 import { useAuth } from '../../authContext'
+import { useTheme } from '../../themeContext'
 import { Banner } from '../../Assets/Banner'
 import { CartDrawer } from '../CartDrawer'
 import './Header.css'
@@ -9,19 +10,12 @@ export const Header=()=>{
 
     const [cartOpen,setCartOpen]=useState(false)
     const { user } = useAuth()
-    const [isDark, setIsDark] = useState(() => {
-        const preference = localStorage.getItem('theme-preference') || 'system'
-        return preference === 'dark' || (preference === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    })
+    const { effective, setPreference } = useTheme()
+    const isDark = effective === 'dark'
     const userName = user?.nome?.trim().split(/\s+/)[0] || user?.email?.split('@')[0] || 'usuário'
 
-    const toggleTheme = () => {
-        const nextIsDark = !isDark
-        setIsDark(nextIsDark)
-        localStorage.setItem('theme-preference', nextIsDark ? 'dark' : 'light')
-        document.documentElement.dataset.theme = nextIsDark ? 'dark' : 'light'
-        document.documentElement.style.colorScheme = nextIsDark ? 'dark' : 'light'
-    }
+    // Alterna rapidamente entre claro/escuro; a opção 'sistema' fica em Configurações.
+    const toggleTheme = () => setPreference(isDark ? 'light' : 'dark')
 
     return(
         <>
@@ -45,6 +39,34 @@ export const Header=()=>{
                             <NavLink to='/perfil' className='headerGreeting'>
                                 <UserIcon className='headerIcon'/>
                                 <span>Olá, {userName}!</span>
+                            </NavLink>
+                            {user.role==='admin' && <NavLink to='/gerente' className='headerHome'>
+                                <SquaresFourIcon className='headerIcon'/>
+                                <span className='hidden sm:inline'>Gerência</span>
+                            </NavLink>}
+                            {user.role==='cook' && <NavLink to='/cozinha/minhas-cozinhas' className='headerHome'>
+                                <SquaresFourIcon className='headerIcon'/>
+                                <span className='hidden sm:inline'>Minhas cozinhas</span>
+                            </NavLink>}
+                            {user.role==='customer' && <NavLink to='/catalogo/bancadas' className='headerHome'>
+                                <ForkKnifeIcon className='headerIcon'/>
+                                <span className='hidden sm:inline'>Bancadas</span>
+                            </NavLink>}
+                            {(user.role==='cook' || user.role==='admin') && <NavLink to='/cozinha' className='headerHome'>
+                                <CookingPotIcon className='headerIcon'/>
+                                <span className='hidden sm:inline'>Cozinha</span>
+                            </NavLink>}
+                            {(user.role==='cook' || user.role==='admin') && <NavLink to='/cozinha/bancadas' className='headerHome'>
+                                <ForkKnifeIcon className='headerIcon'/>
+                                <span className='hidden sm:inline'>Bancadas</span>
+                            </NavLink>}
+                            {user.role==='cook' && <NavLink to='/cozinha/pratos' className='headerHome'>
+                                <CookingPotIcon className='headerIcon'/>
+                                <span className='hidden sm:inline'>Meus pratos</span>
+                            </NavLink>}
+                            <NavLink to='/configuracoes' className='headerHome'>
+                                <GearIcon className='headerIcon'/>
+                                <span className='hidden sm:inline'>Configurações</span>
                             </NavLink>
                             <NavLink to='/' className='headerHome'>
                                 <House className='headerIcon'/>

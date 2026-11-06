@@ -1,0 +1,78 @@
+.settingsPage{
+    min-height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.settingsContent{
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+    font-family: Poppins, system-ui, sans-serif;
+}
+
+.settingsContent h1{
+    font-size: clamp(28px, 4vw, 36px);
+    font-weight: 300;
+    margin-bottom: 1.5rem;
+}
+
+.settingsSection{
+    background-color: var(--surface-color);
+    border: 1px solid color-mix(in srgb, var(--muted-text-color) 30%, transparent);
+    border-radius: .6rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.settingsSection h2{
+    font-size: 22px;
+    font-weight: 400;
+    margin: 0 0 1rem;
+}
+
+.settingsFieldset{
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+}
+
+.settingsFieldset legend{
+    font-weight: 500;
+    margin-bottom: .5rem;
+}
+
+.settingsRadio{
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    cursor: pointer;
+    font-size: 17px;
+}
+
+.settingsHint{
+    margin-top: 1rem;
+    color: var(--muted-text-color);
+    font-size: 14px;
+}
+
+.settingsLogout{
+    margin-top: .5rem;
+    font: inherit;
+    font-weight: 600;
+    padding: .6rem 1.4rem;
+    border-radius: .35rem;
+    border: 2px solid var(--brand-color);
+    background: var(--brand-color);
+    color: var(--bg-color);
+    cursor: pointer;
+    transition: background .2s ease;
+}
+
+.settingsLogout:hover{
+    background: var(--brand-hover);
+    border-color: var(--brand-hover);
+}

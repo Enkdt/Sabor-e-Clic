@@ -1,7 +1,8 @@
 .orderPage{
     width: 100%;
     min-height: 100vh;
-    background-color: #fffaf5;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     font-family: Poppins;
 }
 
@@ -16,7 +17,7 @@
 .orderPage .orderTitle{
     margin: 0 0 8px 0;
     font-weight: 400;
-    color: #191919;
+    color: var(--text-color);
 }
 
 .orderPage .orderList{
@@ -25,7 +26,7 @@
     align-self: start;
     gap: 48px;
     padding: 4px 8px;
-    background-color: #ece8e2;
+    background-color: var(--surface-color);
 }
 
 .orderPage .orderList .cartItem{
@@ -55,7 +56,7 @@
     flex-direction: column;
     padding: 24px;
     box-sizing: border-box;
-    border: 2px solid #73980d;
+    border: 2px solid var(--brand-color);
     border-radius: 8px;
 }
 
@@ -69,7 +70,7 @@
     margin: 8px 0 56px 0;
     font-size: 26px;
     font-weight: 300;
-    color: #9a9a9a;
+    color: var(--muted-text-color);
 }
 
 .orderPage .orderValues{
@@ -84,13 +85,13 @@
     gap: 16px;
     font-size: 26px;
     font-weight: 300;
-    color: #9a9a9a;
+    color: var(--muted-text-color);
 }
 
 .orderPage .orderValues .orderTotal{
     font-size: 28px;
     font-weight: 400;
-    color: #191919;
+    color: var(--text-color);
 }
 
 .orderPage .orderActions{
@@ -99,7 +100,7 @@
     align-items: center;
     margin-top: 40px;
     padding-top: 32px;
-    border-top: 1px solid #73980d;
+    border-top: 1px solid var(--brand-color);
 }
 
 .orderPage .orderActions .nextBtn{
@@ -111,7 +112,7 @@
 
 .orderPage .orderAddMore{
     margin-top: 20px;
-    color: #9a9a9a;
+    color: var(--muted-text-color);
     font-size: 16px;
     font-weight: 300;
     text-decoration: none;
@@ -119,6 +120,64 @@
 }
 
 .orderPage .orderAddMore:hover{
-    color: #73980d;
+    color: var(--brand-color);
     text-decoration: underline;
 }
+
+.orderPage .orderPayment{
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 480px;
+    margin: 24px 0;
+    padding: 24px;
+    box-sizing: border-box;
+    background-color: var(--surface-color);
+    border: 2px solid var(--brand-color);
+    border-radius: 8px;
+}
+
+.orderPage .orderPayment h2{
+    margin: 0;
+    font-size: 24px;
+    font-weight: 400;
+}
+
+.orderPage .orderSaldo{
+    margin: 0;
+    font-size: 15px;
+    color: var(--muted-text-color);
+}
+
+.orderPage .orderPayment label{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--muted-text-color);
+}
+
+.orderPage .orderPayment select{
+    font: inherit;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid var(--muted-text-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.orderPage .orderPayment .nextBtn{
+    margin: 0;
+    font-size: 20px;
+    padding: 10px 0;
+}
+
+.orderPage .orderError{
+    color: #b3261e;
+    font-size: 15px;
+    margin: 8px 0 0 0;
+}
+
+:root[data-theme="dark"] .orderPage .orderError{color:#ff8b82}
+@media (prefers-color-scheme: dark){:root[data-theme="system"] .orderPage .orderError{color:#ff8b82}}

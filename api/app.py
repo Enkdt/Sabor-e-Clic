@@ -2,13 +2,12 @@
 # TODO: Organizar as importações depois.
 
 import logging
+import os
 from time import perf_counter
 import models
 from logging.handlers import RotatingFileHandler
-from sqlalchemy.orm import configure_mappers
 from pathlib import Path
 from urllib.parse import urlsplit
-from sqlalchemy import inspect, text
 
 from flask import Flask, g, request
 from werkzeug.exceptions import HTTPException
@@ -21,21 +20,38 @@ from utils import err_json
 from config import Config, mail
 from blueprints.auth import auth_bp
 from blueprints.bancadas import bancadas_bp
+from blueprints.cardapio import cardapio_bp
+from blueprints.clientes import clientes_bp
+from blueprints.cozinha import cozinha_bp
+from blueprints.dashboard import dashboard_bp
+from blueprints.estoque import estoque_bp
+from blueprints.pedidos import pedidos_bp
+from blueprints.usuarios import usuarios_bp
+from blueprints.uploads import uploads_bp
 from extensions import csrf, db, limiter
+from migrations import run_migrations
 
 logger = logging.getLogger(__name__)
 
+# Diretório do log fixado em api/logs, não no diretório de trabalho do processo.
+LOG_DIR = Path(__file__).resolve().parent / "logs"
+
 def _configure_logging():
-    sabor_logger = logging.getLogger()
-    # Isso evita a criação de manipuladores duplicados.
-    if any(handler.name == "sabor-file" for handler in sabor_logger.handlers):
+    # Sob o reloader do Werkzeug a aplicação é importada em dois processos (monitor + worker);
+    # se ambos abrirem o RotatingFileHandler no mesmo arquivo, o rollover corrompe o log.
+    # Só o processo que realmente atende requisições escreve no arquivo.
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "false":
         return
-    Path("logs").mkdir(exist_ok=True)
-    handler = RotatingFileHandler("logs/logSabor&Clic.log", maxBytes=10485760, backupCount=3)
+    root_logger = logging.getLogger()
+    # Isso evita a criação de manipuladores duplicados.
+    if any(getattr(handler, "name", None) == "sabor-file" for handler in root_logger.handlers):
+        return
+    LOG_DIR.mkdir(exist_ok=True)
+    handler = RotatingFileHandler(LOG_DIR / "logSabor&Clic.log", maxBytes=10485760, backupCount=3)
     handler.set_name("sabor-file")
     handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
-    sabor_logger.addHandler(handler)
-    sabor_logger.setLevel(logging.INFO)
+    root_logger.addHandler(handler)
+    root_logger.setLevel(logging.INFO)
 
 # Criar uma configuração de teste depois.
 def create_app(test_config=None):
@@ -94,56 +110,19 @@ def create_app(test_config=None):
     if database_path:
         Path(database_path).expanduser().resolve().parent.mkdir(parents=True, exist_ok=True)
 
-    try:
-        with app.app_context():
-            configure_mappers()
-            db.create_all()
-            if "preco_hora" not in {column["name"] for column in inspect(db.engine).get_columns("bancada")}:
-                db.session.execute(text(
-                    "ALTER TABLE bancada ADD COLUMN preco_hora NUMERIC(10, 2) NOT NULL DEFAULT 40.00"
-                ))
-                db.session.commit()
-            if db.engine.dialect.name == "sqlite":
-                db.session.execute(text("""
-                    CREATE TRIGGER IF NOT EXISTS prevent_agendamento_overlap_insert
-                    BEFORE INSERT ON agendamento
-                    WHEN EXISTS (
-                        SELECT 1 FROM agendamento existing
-                        WHERE existing.id_bancada = NEW.id_bancada
-                          AND julianday(NEW.horario_agendado) < julianday(existing.horario_agendado) + (existing.tempo_agendado / 1440.0)
-                          AND julianday(existing.horario_agendado) < julianday(NEW.horario_agendado) + (NEW.tempo_agendado / 1440.0)
-                    )
-                    BEGIN
-                        SELECT RAISE(ABORT, 'A bancada já tem um agendamento nesse intervalo.');
-                    END
-                """))
-                db.session.execute(text("""
-                    CREATE TRIGGER IF NOT EXISTS prevent_agendamento_overlap_update
-                    BEFORE UPDATE OF id_bancada, horario_agendado, tempo_agendado ON agendamento
-                    WHEN EXISTS (
-                        SELECT 1 FROM agendamento existing
-                        WHERE existing.id != NEW.id
-                          AND existing.id_bancada = NEW.id_bancada
-                          AND julianday(NEW.horario_agendado) < julianday(existing.horario_agendado) + (existing.tempo_agendado / 1440.0)
-                          AND julianday(existing.horario_agendado) < julianday(NEW.horario_agendado) + (NEW.tempo_agendado / 1440.0)
-                    )
-                    BEGIN
-                        SELECT RAISE(ABORT, 'A bancada já tem um agendamento nesse intervalo.');
-                    END
-                """))
-                db.session.commit()
-            if "auth_version" not in {column["name"] for column in inspect(db.engine).get_columns("usuario")}:
-                db.session.execute(text("ALTER TABLE usuario ADD COLUMN auth_version INTEGER NOT NULL DEFAULT 1"))
-                db.session.commit()
-                logger.info("Migração da coluna de versão de autenticação concluída.")
-            logger.info("Estrutura do banco de dados verificada.")
-    except Exception:
-        logger.exception("Falha ao inicializar o banco de dados.")
-        raise
+    run_migrations(app)
 
     # Blueprints; outras serão adicionadas depois.
     app.register_blueprint(auth_bp)
     app.register_blueprint(bancadas_bp)
+    app.register_blueprint(cardapio_bp)
+    app.register_blueprint(clientes_bp)
+    app.register_blueprint(cozinha_bp)
+    app.register_blueprint(dashboard_bp)
+    app.register_blueprint(estoque_bp)
+    app.register_blueprint(pedidos_bp)
+    app.register_blueprint(usuarios_bp)
+    app.register_blueprint(uploads_bp)
 
     @app.errorhandler(CSRFError)
     def csrf_error_handler(error):

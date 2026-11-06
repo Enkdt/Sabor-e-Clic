@@ -1,0 +1,98 @@
+.imageUploader{
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    align-items: flex-start;
+    font-family: Poppins, system-ui, sans-serif;
+}
+
+.imageUploaderPreview{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 140px;
+    height: 140px;
+    overflow: hidden;
+    background: var(--surface-color);
+    border: 1px solid var(--muted-text-color);
+}
+
+.imageUploaderPreview--round{ border-radius: 50%; }
+.imageUploaderPreview--square{ border-radius: .5rem; }
+
+.imageUploaderPreview img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.imageUploaderEmpty{
+    font-size: 13px;
+    color: var(--muted-text-color);
+}
+
+.imageUploaderButton{
+    cursor: pointer;
+    font-size: 14px;
+    padding: .45rem .9rem;
+    border-radius: .35rem;
+    border: 1px solid var(--brand-color);
+    background: var(--brand-color);
+    color: var(--bg-color);
+}
+
+.imageUploaderButton input{
+    display: none;
+}
+
+.imageUploaderPreview.isPending{
+    outline: 2px dashed var(--brand-color);
+    outline-offset: 2px;
+}
+
+.imageUploaderConfirm{
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+}
+
+.imageUploaderHint{
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted-text-color);
+}
+
+.imageUploaderActions{
+    display: flex;
+    gap: .5rem;
+}
+
+.imageUploaderSave,
+.imageUploaderCancel{
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    padding: .45rem .9rem;
+    border-radius: .35rem;
+}
+
+.imageUploaderSave{
+    border: 1px solid var(--brand-color);
+    background: var(--brand-color);
+    color: var(--bg-color);
+}
+
+.imageUploaderCancel{
+    border: 1px solid var(--muted-text-color);
+    background: transparent;
+    color: var(--text-color);
+}
+
+.imageUploaderError{
+    color: #b3261e;
+    font-size: 14px;
+    margin: 0;
+}
+
+:root[data-theme="dark"] .imageUploaderError{color:#ff8b82}
+@media (prefers-color-scheme: dark){:root[data-theme="system"] .imageUploaderError{color:#ff8b82}}

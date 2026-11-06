@@ -10,10 +10,10 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from extensions import db
 from .usuario import (
-    Cliente, ClienteEndereco, Cozinheiro, Funcionario, PasswordResetToken,
+    Cliente, ClienteEndereco, ClienteFavorito, Cozinheiro, Funcionario, PasswordResetToken,
     Turno, Usuario,
 )
-from .pedido import Pedido
+from .pedido import Pedido, Avaliacao
 from .restaurante import (
     Cardapio, Categoria, Ingrediente, Prato, Restaurante, RestauranteEndereco,
     restaurante_categoria,
@@ -118,8 +118,16 @@ class CRUD:
             return _create(ClienteEndereco, dados)
 
         @staticmethod
+        def cliente_favorito(**dados):
+            return _create(ClienteFavorito, dados)
+
+        @staticmethod
         def pedido(**dados):
             return _create(Pedido, dados)
+
+        @staticmethod
+        def avaliacao(**dados):
+            return _create(Avaliacao, dados)
 
         @staticmethod
         def cardapio(**dados):
@@ -193,6 +201,10 @@ class CRUD:
         def restaurante_categoria(id_restaurante: int, id_categoria: int):
             return _create_restaurante_categoria(id_restaurante, id_categoria)
 
+        @staticmethod
+        def cozinheiro_restaurante(id_cozinheiro: int, id_restaurante: int):
+            return _add_cozinheiro_restaurante(id_cozinheiro, id_restaurante)
+
 
     class read:
         @staticmethod
@@ -252,12 +264,24 @@ class CRUD:
             return _read_many(ClienteEndereco, filters, limit=limit, offset=offset)
 
         @staticmethod
+        def favoritos_cliente(filters=None, *, limit=None, offset=0):
+            return _read_many(ClienteFavorito, filters, limit=limit, offset=offset)
+
+        @staticmethod
         def pedido(identity):
             return _read_one(Pedido, identity)
 
         @staticmethod
         def pedidos(filters=None, *, limit=None, offset=0):
             return _read_many(Pedido, filters, limit=limit, offset=offset)
+
+        @staticmethod
+        def avaliacao(identity):
+            return _read_one(Avaliacao, identity)
+
+        @staticmethod
+        def avaliacoes(filters=None, *, limit=None, offset=0):
+            return _read_many(Avaliacao, filters, limit=limit, offset=offset)
 
         @staticmethod
         def cardapio(identity):
@@ -561,6 +585,10 @@ class CRUD:
             return _delete_record(Cozinheiro, identity)
 
         @staticmethod
+        def cozinheiro_restaurante(id_cozinheiro: int, id_restaurante: int):
+            return _remove_cozinheiro_restaurante(id_cozinheiro, id_restaurante)
+
+        @staticmethod
         def turno(identity):
             return _delete_record(Turno, identity)
 
@@ -571,6 +599,10 @@ class CRUD:
         @staticmethod
         def cliente_endereco(identity):
             return _delete_record(ClienteEndereco, identity)
+
+        @staticmethod
+        def cliente_favorito(identity):
+            return _delete_record(ClienteFavorito, identity)
 
         @staticmethod
         def pedido(identity):
@@ -655,26 +687,26 @@ class CRUD:
 _EDITABLE = {
     "usuario": {"nome", "email"},
     "password_reset_token": {"expires_at", "used_at"},
-    "funcionario": {"nivel_permissao"},
-    "cozinheiro": {"especialidade"},
+    "funcionario": {"nivel_permissao", "avatar"},
+    "cozinheiro": {"especialidade", "avatar"},
     "turno": {"inicio", "fim", "periodo"},
-    "cliente": set(),
+    "cliente": {"avatar", "saldo"},
     "cliente_endereco": {"rua", "numero", "complemento", "cep", "pais", "estado", "cidade", "bairro"},
-    "pedido": {"data", "total", "status", "tempo_estimado"},
+    "pedido": {"data", "total", "status", "tempo_estimado", "metodo_pagamento"},
     "cardapio": {"nome", "tipo"},
-    "restaurante": {"nome"},
+    "restaurante": {"nome", "imagem", "slug"},
     "restaurante_endereco": {"rua", "numero", "complemento", "bairro", "cidade", "estado"},
-    "prato": {"nome", "preco_unidade", "quantidade"},
+    "prato": {"nome", "preco_unidade", "quantidade", "imagem", "descricao", "slug"},
     "categoria": {"nome"},
-    "ingrediente": {"nome", "validade", "unidade", "quantidade"},
-    "agendamento": {"horario_agendado", "tempo_agendado", "preco_total"},
+    "ingrediente": {"nome", "validade", "unidade", "quantidade", "imagem"},
+    "agendamento": {"horario_agendado", "tempo_agendado", "preco_total", "status", "motivo_negacao"},
     "bancada": {"preco_hora"},
     "bancada_endereco": {"rua", "numero", "complemento", "bairro", "cidade", "estado"},
     "bancada_horario_disponivel": {"inicio", "fim"},
     "equipamento": {"nome", "tipo"},
     "cozinheiro_pedido": set(),
     "bancada_equipamento": {"qtd"},
-    "pedido_prato": {"qtd", "preco_und", "preco_total"},
+    "pedido_prato": {"qtd", "preco_und", "preco_total", "status", "confirmado_em", "motivo_negacao"},
     "pedido_cardapio": set(),
     "prato_ingrediente": {"unidade_medida", "qtd"},
     "prato_categoria": set(),
@@ -716,6 +748,29 @@ def _create_restaurante_categoria(id_restaurante, id_categoria):
     restaurant.categorias.append(category)
     _commit(restaurant)
     return id_restaurante, id_categoria
+
+
+def _add_cozinheiro_restaurante(id_cozinheiro, id_restaurante):
+    # Filia um cozinheiro a um restaurante (N-N). Idempotente. Só o admin chama.
+    _validate_identity(Cozinheiro, id_cozinheiro)
+    _validate_identity(Restaurante, id_restaurante)
+    cozinheiro = _read_one(Cozinheiro, id_cozinheiro)
+    restaurante = _read_one(Restaurante, id_restaurante)
+    if restaurante not in cozinheiro.restaurantes:
+        cozinheiro.restaurantes.append(restaurante)
+        _commit(cozinheiro)
+    return id_cozinheiro, id_restaurante
+
+
+def _remove_cozinheiro_restaurante(id_cozinheiro, id_restaurante):
+    _validate_identity(Cozinheiro, id_cozinheiro)
+    _validate_identity(Restaurante, id_restaurante)
+    cozinheiro = _read_one(Cozinheiro, id_cozinheiro)
+    restaurante = _read_one(Restaurante, id_restaurante)
+    if restaurante in cozinheiro.restaurantes:
+        cozinheiro.restaurantes.remove(restaurante)
+        _commit(cozinheiro)
+    return id_cozinheiro, id_restaurante
 
 
 def _read_restaurante_categoria(identity):
@@ -1051,8 +1106,8 @@ def _validate_domain(model, data):
         if "inicio" in data and "fim" in data and data["inicio"] >= data["fim"]:
             raise ValueError("O início do turno deve ser anterior ao fim.")
     elif model is Pedido:
-        if "status" in data and data["status"] not in {"preparando", "pronto"}:
-            raise ValueError("O status do pedido deve ser preparando ou pronto.")
+        if "status" in data and data["status"] not in {"preparando", "pronto", "pago"}:
+            raise ValueError("O status do pedido deve ser preparando, pronto ou pago.")
         _nonnegative(data, "total", "tempo_estimado")
         if "tempo_estimado" in data and data["tempo_estimado"] == 0:
             raise ValueError("O tempo estimado do pedido deve ser maior que zero.")
@@ -1083,12 +1138,18 @@ def _nonnegative(data, *fields):
 
 
 def _ensure_booking_available(data, *, exclude_id=None):
-    # Impede sobreposição com agendamentos já gravados para a mesma bancada.
+    # Impede sobreposição com agendamentos ACEITOS da mesma bancada (pendentes não ocupam).
+    # Só valida quando o próprio agendamento resultará em 'aceito' (ou não tem status: criação).
     if not {"id_bancada", "horario_agendado", "tempo_agendado"}.issubset(data):
+        return
+    if data.get("status") == "negado":
         return
     start = data["horario_agendado"]
     end = start + timedelta(minutes=data["tempo_agendado"])
-    statement = db.select(Agendamento).where(Agendamento.id_bancada == data["id_bancada"])
+    statement = db.select(Agendamento).where(
+        Agendamento.id_bancada == data["id_bancada"],
+        Agendamento.status == "aceito",
+    )
     if exclude_id is not None:
         statement = statement.where(Agendamento.id != exclude_id)
     try:

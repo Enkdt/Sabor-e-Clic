@@ -1,6 +1,7 @@
 .dishPage{
     width: 100%;
-    background-color: #fffaf5;
+    background-color: var(--bg-color);
+    color: var(--text-color);
     font-family: Poppins;
     overflow: hidden;
 }
@@ -27,7 +28,7 @@
 .dishPage .dishPageName{
     margin: 0;
     font-weight: 300;
-    color: #191919;
+    color: var(--text-color);
     text-align: center;
 }
 
@@ -114,4 +115,118 @@
 .dishPage .dishPagePurchase .nextBtn{
     margin: 0;
     max-width: 320px;
+}
+
+
+/* Layout novo: grupo de 3 blocos + seção de reviews abaixo */
+.dishPage .dishPageRatingSummary{
+    margin: 4px 0 0;
+    font-size: 16px;
+    color: var(--brand-color);
+    font-weight: 400;
+}
+
+.dishPage .dishPageDescription{
+    max-width: 70ch;
+    margin: 8px 0 0;
+    font-weight: 300;
+    line-height: 1.5;
+    color: var(--muted-text-color);
+}
+
+.dishPage .dishPageDetails{
+    max-width: 1100px;
+    margin: 40px auto 0;
+}
+
+.dishPage .dishPageGroup .dishPageBlock{
+    background: var(--surface-color);
+    border: 1px solid color-mix(in srgb, var(--muted-text-color) 25%, transparent);
+    border-radius: .6rem;
+    padding: 1.25rem 1.5rem;
+}
+
+.dishPage .dishPageBlock h2{
+    margin: 0 0 .75rem;
+    font-size: 20px;
+    font-weight: 400;
+}
+
+.dishPage .dishPageBlock ul{
+    margin: 0;
+    padding-left: 1.1rem;
+    list-style: disc;
+    font-weight: 300;
+    line-height: 1.8;
+}
+
+.dishPage .dishPageEmpty{
+    color: var(--muted-text-color);
+    font-weight: 300;
+    font-size: 14px;
+}
+
+.dishPage .dishPagePurchase{
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.dishPage .dishPageReviews{
+    max-width: 1100px;
+    margin: 32px auto 0;
+    padding-bottom: 80px;
+}
+
+.dishPage .dishPageReviews h2{
+    font-size: 24px;
+    font-weight: 400;
+    margin: 0 0 1rem;
+}
+
+.dishPage .dishPageReviewList{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.dishPage .dishPageReview{
+    background: var(--surface-color);
+    border: 1px solid color-mix(in srgb, var(--muted-text-color) 20%, transparent);
+    border-radius: .5rem;
+    padding: 1rem 1.25rem;
+}
+
+.dishPage .dishPageReviewHead{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+}
+
+.dishPage .dishPageReviewStars{
+    color: #ffac11;
+    letter-spacing: 2px;
+}
+
+.dishPage .dishPageReviewDate{
+    font-size: 13px;
+    color: var(--muted-text-color);
+}
+
+.dishPage .dishPageReviewText{
+    margin: .5rem 0 0;
+    font-weight: 300;
+    line-height: 1.5;
+}
+
+.dishPage .dishPageReviewAuthor{
+    margin: .35rem 0 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color);
 }

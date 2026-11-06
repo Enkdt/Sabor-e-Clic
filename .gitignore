@@ -24,6 +24,9 @@ dist-ssr
 api/instance/*
 api/instances/*
 
+# uploaded images (local storage backend; produção usa bucket)
+api/uploads/
+
 # python ignores
 __pycache__/
 .venv/
@@ -43,3 +46,10 @@ __pycache__/
 .codex
 .aws
 .agents
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

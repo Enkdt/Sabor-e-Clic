@@ -1,6 +1,7 @@
 .orderCard{
     padding: 12px;
-    background-color: #ece8e2;
+    background-color: var(--surface-color);
+    color: var(--text-color);
     border-radius: 2px;
     font-family: Poppins;
 }
@@ -9,7 +10,7 @@
     flex-shrink: 0;
     width: 100px;
     height: 100px;
-    background-color: #73980d;
+    background-color: var(--brand-color);
     background-size: cover;
     background-position: center;
     border-radius: 50%;
@@ -32,7 +33,7 @@
 .orderCard .orderCardLabel{
     font-size: 14px;
     font-weight: 300;
-    color: #787571;
+    color: var(--muted-text-color);
 }
 
 .orderCard .orderCardItems{
@@ -40,8 +41,43 @@
     padding: 0;
     font-size: 14px;
     font-weight: 300;
-    color: #787571;
+    color: var(--muted-text-color);
 }
+
+.orderCard .orderCardItems li{
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 8px;
+}
+
+.orderCard .orderCardItemTop{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.orderCard .orderCardItemRestaurant{
+    font-size: 12px;
+    color: var(--brand-color);
+}
+
+.orderCard .orderCardItemStatus{
+    font-size: 11px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--muted-text-color) 20%, transparent);
+    color: var(--text-color);
+}
+.orderCard .orderCardItemStatus--entregue{ background: color-mix(in srgb, #73980d 25%, transparent); }
+.orderCard .orderCardItemStatus--negado{ background: color-mix(in srgb, #b3261e 22%, transparent); }
+.orderCard .orderCardDenied{
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #b3261e;
+}
+:root[data-theme="dark"] .orderCard .orderCardDenied{ color:#ff8b82; }
 
 .orderCard .orderCardSide{
     display: flex;
@@ -74,9 +110,9 @@
     font-family: Poppins;
     font-size: 14px;
     font-weight: 400;
-    color: #191919;
-    background-color: #fffefe;
-    border: none;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    border: 1px solid var(--muted-text-color);
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -86,3 +122,49 @@
     color: #fffaf5;
     background-color: #73980d;
 }
+
+.orderCardReviewForm{
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    margin-top: .75rem;
+}
+.orderCardReviewForm label{
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    font-size: 15px;
+}
+.orderCardReviewForm select,
+.orderCardReviewForm textarea{
+    font: inherit;
+    padding: .4rem;
+    border-radius: .3rem;
+    border: 1px solid var(--muted-text-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+.orderCardReviewActions{
+    display: flex;
+    gap: .5rem;
+}
+.orderCardReviewActions button{
+    font: inherit;
+    cursor: pointer;
+    padding: .4rem .9rem;
+    border-radius: .3rem;
+    border: 1px solid var(--brand-color);
+    background: var(--brand-color);
+    color: var(--bg-color);
+}
+.orderCardReviewActions button[type="button"]{
+    background: transparent;
+    color: var(--text-color);
+}
+.orderCardReviewed{
+    font-size: 14px;
+    color: var(--brand-color);
+    font-weight: 600;
+}
+.orderCardReviewError{ color:#b3261e; font-size:14px; margin:0; }
+:root[data-theme="dark"] .orderCardReviewError{color:#ff8b82}

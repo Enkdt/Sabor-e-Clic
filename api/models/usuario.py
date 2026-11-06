@@ -1,5 +1,5 @@
 from datetime import datetime, time
-from sqlalchemy import CheckConstraint, ForeignKey, String
+from sqlalchemy import CheckConstraint, ForeignKey, String, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
 
@@ -11,9 +11,9 @@ class Usuario(db.Model):
     senha_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     email_verificado: Mapped[bool] = mapped_column(nullable=False, default=False)
     auth_version: Mapped[int] = mapped_column(nullable=False, default=1)
-    funcionario: Mapped['Funcionario | None'] = relationship(back_populates='usuario')
-    cozinheiro: Mapped['Cozinheiro | None'] = relationship(back_populates='usuario')
-    cliente: Mapped['Cliente | None'] = relationship(back_populates='usuario')
+    funcionario: Mapped['Funcionario | None'] = relationship(back_populates='usuario', cascade='all, delete-orphan')
+    cozinheiro: Mapped['Cozinheiro | None'] = relationship(back_populates='usuario', cascade='all, delete-orphan')
+    cliente: Mapped['Cliente | None'] = relationship(back_populates='usuario', cascade='all, delete-orphan')
 
     @property
     def role(self) -> str | None:
@@ -42,6 +42,7 @@ class Funcionario(db.Model):
     __tablename__ = 'funcionario'
     id_usuario: Mapped[int] = mapped_column(ForeignKey('usuario.id'), primary_key=True)
     nivel_permissao: Mapped[int] = mapped_column(nullable=False)
+    avatar: Mapped[str | None] = mapped_column(String(100), nullable=True)
     usuario: Mapped['Usuario'] = relationship(back_populates='funcionario')
     __table_args__ = (
         CheckConstraint(
@@ -54,10 +55,21 @@ class Cozinheiro(db.Model):
     __tablename__ = 'cozinheiro'
     id_usuario: Mapped[int] = mapped_column(ForeignKey('usuario.id'), primary_key=True)
     especialidade: Mapped[str] = mapped_column(String(60), nullable=False)
+    avatar: Mapped[str | None] = mapped_column(String(100), nullable=True)
     usuario: Mapped['Usuario'] = relationship(back_populates='cozinheiro')
     turno: Mapped[list['Turno']] = relationship(back_populates='cozinheiro', cascade='all, delete-orphan')
     agendamento: Mapped[list['Agendamento']] = relationship(back_populates='cozinheiro')
     associacao_pedido: Mapped[list['CozinheiroPedido']] = relationship(back_populates='cozinheiro')
+    restaurantes: Mapped[list['Restaurante']] = relationship(secondary='cozinheiro_restaurante', back_populates='cozinheiros')
+
+
+# Filiação N-N: um cozinheiro pode gerenciar vários restaurantes; um restaurante tem 0..N cozinheiros.
+# O vínculo é criado somente pelo admin.
+cozinheiro_restaurante = db.Table(
+    'cozinheiro_restaurante',
+    db.Column('id_cozinheiro', ForeignKey('cozinheiro.id_usuario'), primary_key=True),
+    db.Column('id_restaurante', ForeignKey('restaurante.id'), primary_key=True),
+)
 
 
 class Turno(db.Model):
@@ -78,6 +90,8 @@ class Turno(db.Model):
 class Cliente(db.Model):
     __tablename__ = 'cliente'
     id_usuario: Mapped[int] = mapped_column(ForeignKey('usuario.id'), primary_key=True)
+    avatar: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    saldo: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, default=200)
     endereco: Mapped[list['ClienteEndereco']] = relationship(back_populates='cliente', cascade='all, delete-orphan')
     usuario: Mapped['Usuario'] = relationship(back_populates='cliente')
     pedido: Mapped[list['Pedido']] = relationship(back_populates='cliente')
@@ -95,3 +109,10 @@ class ClienteEndereco(db.Model):
     cidade: Mapped[str] = mapped_column(String(45), nullable=False)
     estado: Mapped[str] = mapped_column(String(3), nullable=False) # Sigla do estado, como SP, RJ ou MG.
     cliente: Mapped['Cliente'] = relationship(back_populates='endereco')
+
+
+class ClienteFavorito(db.Model):
+    __tablename__ = 'cliente_favorito'
+    # Um restaurante favoritado por um cliente; par único evita duplicatas.
+    id_usuario: Mapped[int] = mapped_column(ForeignKey('cliente.id_usuario'), primary_key=True)
+    id_restaurante: Mapped[int] = mapped_column(ForeignKey('restaurante.id'), primary_key=True)

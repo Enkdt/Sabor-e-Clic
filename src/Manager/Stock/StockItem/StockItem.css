@@ -13,7 +13,7 @@
 .stockItem{
     position: relative;
     padding: 8px;
-    background-color: #ece8e2;
+    background-color: var(--surface-color);
     border-radius: 2px;
     overflow: hidden;
 }
@@ -42,7 +42,7 @@
     margin: 4px 0 0 0;
     font-size: 20px;
     font-weight: 300;
-    color: #787571;
+    color: var(--muted-text-color);
 }
 
 .stockItem .stockItemTitle{
@@ -56,15 +56,15 @@
     margin: 0;
     font-size: 32px;
     font-weight: 300;
-    color: #191919;
+    color: var(--text-color);
 }
 
 .stockItem .stockItemTag{
     padding: 0 24px;
     font-size: 18px;
     font-weight: 300;
-    color: #73980d;
-    border: 1px solid #73980d;
+    color: var(--brand-color);
+    border: 1px solid var(--brand-color);
     border-radius: 999px;
 }
 
@@ -75,15 +75,15 @@
     font-family: Poppins;
     font-size: 20px;
     font-weight: 300;
-    color: #73980d;
-    background-color: #fffefe;
-    border: none;
+    color: var(--brand-color);
+    background-color: var(--surface-color);
+    border: 1px solid var(--brand-color);
     border-radius: 2px;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .stockItem .stockItemEdit:hover{
-    color: #fffaf5;
-    background-color: #73980d;
+    color: var(--bg-color);
+    background-color: var(--brand-color);
 }

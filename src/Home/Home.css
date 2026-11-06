@@ -15,12 +15,13 @@
     font-size: 20px;
     margin-bottom: 20px;
     margin-left: auto;
-    color: #4a300186;
+    color: var(--muted-text-color);
     transition: all 0.15s ease;
     cursor: pointer;
     display: flex;
     align-items: center;
     margin-right: 15px;
+    text-decoration: none;
 }
 
 .restaurantSec .restaurantSecIcon{
@@ -28,7 +29,7 @@
 }
 
 .restaurantSec .restaurantSecSM:hover{
-    color: #4a3001;
+    color: var(--brand-color);
 }
 
 .restaurantSec .restaurantSecSM:hover .restaurantSecIcon{

@@ -89,3 +89,12 @@
     max-width: 590px;
     padding: 8px 0;
 }
+
+.stockAddError{
+    color: #b3261e;
+    font-family: Poppins;
+    font-size: 15px;
+    margin: 4px 0 0;
+}
+:root[data-theme="dark"] .stockAddError{color:#ff8b82}
+@media (prefers-color-scheme: dark){:root[data-theme="system"] .stockAddError{color:#ff8b82}}

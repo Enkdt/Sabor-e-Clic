@@ -18,4 +18,9 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    // Node-context tooling and Playwright E2E tests run outside the browser.
+    files: ['playwright.config.js', 'tests/**/*.{js,jsx}', 'vite.config.{js,ts}'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
 ])

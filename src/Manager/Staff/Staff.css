@@ -1,0 +1,140 @@
+.staffPage{
+    min-height: 100vh;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.staffForm{
+    max-width: 640px;
+    margin: 0 auto;
+    font-family: Poppins, system-ui, sans-serif;
+}
+
+.staffForm h1{
+    font-weight: 300;
+    margin-bottom: 1.5rem;
+}
+
+.staffForm form{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.staffField{
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+}
+
+.staffField label{
+    font-size: clamp(20px, 2.5vw, 24px);
+}
+
+.staffField select{
+    font: inherit;
+    padding: .6rem;
+    border-radius: .35rem;
+    border: 1px solid var(--muted-text-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.staffError{
+    color: #b3261e;
+    font-size: 15px;
+    margin: 0;
+}
+
+.staffSuccess{
+    color: var(--brand-color);
+    font-size: 16px;
+    margin: 0;
+}
+
+:root[data-theme="dark"] .staffError{color:#ff8b82}
+@media (prefers-color-scheme: dark){:root[data-theme="system"] .staffError{color:#ff8b82}}
+
+
+.staffAssoc{
+    max-width: 640px;
+    margin: 2.5rem auto 0;
+    font-family: Poppins, system-ui, sans-serif;
+}
+
+.staffAssoc h2{
+    font-weight: 300;
+    margin: 0 0 .25rem;
+}
+
+.staffAssocHint{
+    color: var(--muted-text-color);
+    font-size: 14px;
+    margin: 0 0 1rem;
+}
+
+.staffAssocList{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.staffAssocItem{
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    padding: 1rem;
+    background: var(--surface-color);
+    border: 1px solid color-mix(in srgb, var(--muted-text-color) 30%, transparent);
+    border-radius: .5rem;
+}
+
+.staffAssocWho{
+    display: flex;
+    flex-direction: column;
+}
+
+.staffAssocWho span{
+    font-size: 13px;
+    color: var(--muted-text-color);
+}
+
+.staffAssocRestaurants{
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+}
+
+.staffAssocChip{
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: 13px;
+    padding: .2rem .6rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--brand-color) 18%, transparent);
+    color: var(--text-color);
+}
+
+.staffAssocChip button{
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--muted-text-color);
+    font-size: 15px;
+    line-height: 1;
+    padding: 0;
+}
+
+.staffAssocItem select{
+    font: inherit;
+    padding: .45rem;
+    border-radius: .35rem;
+    border: 1px solid var(--muted-text-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+    align-self: flex-start;
+}

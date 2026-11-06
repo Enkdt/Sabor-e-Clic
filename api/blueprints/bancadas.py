@@ -1,16 +1,17 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from flask import Blueprint, g, jsonify, request
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from decorators import admin, permission, validar
+from decorators import admin, cook, customer, permission, validar
 from extensions import db
 from models.crud import CRUD
 from models.restaurante import Categoria, Restaurante
-from models.bancada import Bancada
+from models.bancada import Bancada, Agendamento
 from validations import check_json
 from utils import err_json
+import storage
 
 
 bancadas_bp = Blueprint("bancadas", __name__, url_prefix="/api/bancadas")
@@ -35,6 +36,14 @@ def _bancada_json(bancada):
                          for item in bancada.associacao_equipamento],
         "horarios_disponiveis": [{"inicio": faixa.inicio.strftime("%H:%M"), "fim": faixa.fim.strftime("%H:%M")}
                                  for faixa in bancada.bancada_horario_disponivel],
+        # Intervalos já ocupados (agendamentos aceitos) — o front mostra como indisponíveis.
+        "ocupados": [
+            {
+                "inicio": ag.horario_agendado.isoformat(),
+                "fim": (ag.horario_agendado + timedelta(minutes=ag.tempo_agendado)).isoformat(),
+            }
+            for ag in bancada.agendamento if ag.status == "aceito"
+        ],
     }
 
 
@@ -54,11 +63,28 @@ def obter_bancada(bancada_id):
     return jsonify({"bancada": _bancada_json(bancada)})
 
 
+def _agendamento_json(ag):
+    return {
+        "id": ag.id,
+        "id_bancada": ag.id_bancada,
+        "bancada": (ag.bancada.bancada_endereco[0].complemento
+                    if ag.bancada and ag.bancada.bancada_endereco and ag.bancada.bancada_endereco[0].complemento
+                    else f"Bancada #{ag.id_bancada}"),
+        "horario_agendado": ag.horario_agendado.isoformat(),
+        "tempo_agendado": ag.tempo_agendado,
+        "preco_total": str(ag.preco_total),
+        "status": ag.status,
+        "motivo_negacao": ag.motivo_negacao,
+        "cliente": (ag.cliente.usuario.nome if ag.cliente else None),
+    }
+
+
 @bancadas_bp.post("/<int:bancada_id>/agendamentos")
 @validar
+@permission(customer)
 def criar_agendamento(bancada_id):
-    if g.current_user.cozinheiro is None:
-        return err_json("PERMISSION_DENIED", "Somente cozinheiros podem agendar uma bancada.", status=403)
+    """O CLIENTE pede um agendamento (fica 'pendente'); cozinheiro/admin aceita ou nega depois.
+    Cobra o preço do saldo do cliente ao pedir; negar estorna."""
     data = request.get_json(silent=True)
     if not check_json(data):
         return err_json("INVALID_JSON", "Envie os dados em formato JSON válido.", status=400)
@@ -67,14 +93,23 @@ def criar_agendamento(bancada_id):
         return err_json("NOT_FOUND", "Bancada não encontrada.", status=404)
 
     try:
-        horario = datetime.fromisoformat(data.get("inicio", ""))
-        fim = datetime.fromisoformat(data.get("fim", ""))
+        inicio_raw = data.get("inicio")
+        fim_raw = data.get("fim")
+        if not isinstance(inicio_raw, str) or not isinstance(fim_raw, str):
+            raise ValueError("Informe início e fim do agendamento.")
+        # Exige data e hora (formato datetime-local: AAAA-MM-DDTHH:MM), não apenas data.
+        if "T" not in inicio_raw or "T" not in fim_raw:
+            raise ValueError("Informe data e hora (ex.: 2026-11-07T10:00).")
+        horario = datetime.fromisoformat(inicio_raw)
+        fim = datetime.fromisoformat(fim_raw)
         if horario.tzinfo is not None or fim.tzinfo is not None:
             raise ValueError("Informe os horários no fuso local da bancada.")
         segundos = (fim - horario).total_seconds()
         if segundos <= 0 or segundos % 60:
             raise ValueError("O horário final deve ser posterior ao início, em minutos inteiros.")
         duracao = int(segundos // 60)
+        if duracao > 12 * 60:
+            raise ValueError("O agendamento não pode exceder 12 horas.")
         if horario <= datetime.now():
             raise ValueError("A data e hora do agendamento devem estar no futuro.")
         if not any(
@@ -87,29 +122,120 @@ def criar_agendamento(bancada_id):
         preco = (Decimal(str(bancada.preco_hora)) * Decimal(duracao) / Decimal(60)).quantize(
             Decimal("0.01"), rounding=ROUND_HALF_UP
         )
+    except (TypeError, ValueError, InvalidOperation) as error:
+        return err_json("VALIDATION_FAILED", str(error) or "Preencha os dados do agendamento corretamente.", status=400)
+
+    cliente = g.current_user.cliente
+    saldo = Decimal(str(cliente.saldo))
+    if saldo < preco:
+        return err_json("INSUFFICIENT_FUNDS", "Saldo insuficiente para solicitar esta bancada.", status=402)
+
+    try:
+        # Cobra ao pedir; o agendamento nasce 'pendente'. _create valida sobreposição com ACEITOS.
         agendamento = CRUD.create.agendamento(
-            id_cozinheiro=g.current_user.cozinheiro.id_usuario,
+            id_cliente=cliente.id_usuario,
             id_bancada=bancada_id,
             horario_agendado=horario,
             tempo_agendado=duracao,
             preco_total=preco,
+            status="pendente",
         )
-    except (TypeError, ValueError, InvalidOperation) as error:
-        return err_json("VALIDATION_FAILED", str(error) or "Preencha os dados do agendamento corretamente.", status=400)
+        CRUD.update.cliente(cliente.id_usuario, {"saldo": saldo - preco})
+    except ValueError as error:
+        db.session.rollback()
+        return err_json("BOOKING_CONFLICT", str(error), status=409)
     except IntegrityError:
+        db.session.rollback()
         return err_json("BOOKING_CONFLICT", "A bancada já tem um agendamento nesse intervalo.", status=409)
     except SQLAlchemyError:
+        db.session.rollback()
         logger.exception("Falha ao criar agendamento para a bancada %s.", bancada_id)
         return err_json("DATABASE_ERROR", "Não foi possível criar o agendamento.", status=500)
 
-    return jsonify({"success": True, "agendamento": {
-        "id": agendamento.id,
-        "id_bancada": agendamento.id_bancada,
-        "horario_agendado": agendamento.horario_agendado.isoformat(),
-        "tempo_agendado": agendamento.tempo_agendado,
-        "preco_total": str(agendamento.preco_total),
-        "preco_hora": str(bancada.preco_hora),
-    }}), 201
+    return jsonify({"success": True, "agendamento": _agendamento_json(agendamento)}), 201
+
+
+@bancadas_bp.get("/meus-agendamentos")
+@validar
+@permission(customer)
+def meus_agendamentos():
+    """Agendamentos do cliente autenticado (todos os status)."""
+    ags = CRUD.read.agendamentos(filters={"id_cliente": g.current_user.cliente.id_usuario})
+    ags = sorted(ags, key=lambda a: a.id, reverse=True)
+    return jsonify({"agendamentos": [_agendamento_json(a) for a in ags]})
+
+
+@bancadas_bp.get("/agendamentos/pendentes")
+@validar
+@permission((cook, admin))
+def agendamentos_pendentes():
+    """Fila de pedidos de bancada aguardando aceite (cozinheiro vinculado ou admin)."""
+    ags = CRUD.read.agendamentos(filters={"status": "pendente"})
+    ags = sorted(ags, key=lambda a: a.id)
+    return jsonify({"agendamentos": [_agendamento_json(a) for a in ags]})
+
+
+def _pode_aprovar():
+    # Cozinheiro vinculado a algum restaurante, ou admin.
+    if g.current_role == "admin":
+        return True
+    return g.current_role == "cook" and g.current_user.cozinheiro is not None and bool(g.current_user.cozinheiro.restaurantes)
+
+
+@bancadas_bp.post("/agendamentos/<int:ag_id>/aceitar")
+@validar
+@permission((cook, admin))
+def aceitar_agendamento(ag_id):
+    if not _pode_aprovar():
+        return err_json("PERMISSION_DENIED", "Apenas cozinheiros vinculados ou administradores aprovam agendamentos.", status=403)
+    ag = CRUD.read.agendamento(ag_id)
+    if ag is None:
+        return err_json("NOT_FOUND", "Agendamento não encontrado.", status=404)
+    if ag.status != "pendente":
+        return err_json("INVALID_TRANSITION", f"Agendamento não está pendente (estado: {ag.status}).", status=409)
+    try:
+        # Ao aceitar, revalida sobreposição com outros ACEITOS (via _ensure_booking_available no update).
+        CRUD.update.agendamento(ag_id, {"status": "aceito"})
+    except ValueError as error:
+        db.session.rollback()
+        return err_json("BOOKING_CONFLICT", str(error), status=409)
+    except SQLAlchemyError:
+        db.session.rollback()
+        logger.exception("Falha ao aceitar agendamento %s.", ag_id)
+        return err_json("DATABASE_ERROR", "Não foi possível aceitar o agendamento.", status=500)
+    return jsonify({"success": True, "agendamento": _agendamento_json(CRUD.read.agendamento(ag_id))})
+
+
+@bancadas_bp.post("/agendamentos/<int:ag_id>/negar")
+@validar
+@permission((cook, admin))
+def negar_agendamento(ag_id):
+    if not _pode_aprovar():
+        return err_json("PERMISSION_DENIED", "Apenas cozinheiros vinculados ou administradores aprovam agendamentos.", status=403)
+    data = request.get_json(silent=True)
+    if not check_json(data):
+        return err_json("INVALID_JSON", "Envie os dados em formato JSON válido.", status=400)
+    motivo = data.get("motivo")
+    motivo = motivo.strip() if isinstance(motivo, str) else ""
+    if not motivo or len(motivo) > 200:
+        return err_json("VALIDATION_FAILED", "Informe o motivo da recusa (até 200 caracteres).", status=400)
+    ag = CRUD.read.agendamento(ag_id)
+    if ag is None:
+        return err_json("NOT_FOUND", "Agendamento não encontrado.", status=404)
+    if ag.status != "pendente":
+        return err_json("INVALID_TRANSITION", f"Agendamento não está pendente (estado: {ag.status}).", status=409)
+    try:
+        # Estorna o valor ao cliente e marca negado.
+        if ag.cliente is not None:
+            novo_saldo = Decimal(str(ag.cliente.saldo)) + Decimal(str(ag.preco_total))
+            CRUD.update.cliente(ag.id_cliente, {"saldo": novo_saldo})
+        CRUD.update.agendamento(ag_id, {"status": "negado", "motivo_negacao": motivo})
+    except SQLAlchemyError:
+        db.session.rollback()
+        logger.exception("Falha ao negar agendamento %s.", ag_id)
+        return err_json("DATABASE_ERROR", "Não foi possível negar o agendamento.", status=500)
+    return jsonify({"success": True, "agendamento": _agendamento_json(CRUD.read.agendamento(ag_id))})
+
 
 # Verificar se cozinheiros também terão essa permissão; provavelmente, sim.
 @bancadas_bp.post("/restaurantes")

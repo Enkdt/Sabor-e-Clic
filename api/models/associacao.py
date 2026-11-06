@@ -1,4 +1,5 @@
-from sqlalchemy import ForeignKey, String, Numeric
+from datetime import datetime
+from sqlalchemy import CheckConstraint, ForeignKey, String, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from extensions import db
 
@@ -24,8 +25,18 @@ class PedidoPrato(db.Model):
     qtd: Mapped[int] = mapped_column(nullable = False)
     preco_und: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
     preco_total: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
+    # Fluxo por item (cada restaurante confirma/nega o seu). A entrega é derivada do tempo (confirmado_em).
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default='aguardando')
+    confirmado_em: Mapped[datetime | None] = mapped_column(nullable=True)
+    motivo_negacao: Mapped[str | None] = mapped_column(String(200), nullable=True)
     pedido: Mapped['Pedido'] = relationship(back_populates = 'associacao_prato')
     prato: Mapped['Prato'] = relationship(back_populates = 'associacao_pedido')
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('aguardando','confirmado','preparando','pronto','entregue','negado')",
+            name='ck_pedido_prato_status'
+        ),
+    )
 
 class PedidoCardapio(db.Model):
     __tablename__ = 'pedido_cardapio'

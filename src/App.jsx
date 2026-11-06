@@ -1,23 +1,34 @@
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './authContext';
 import { useEffect, useState } from 'react';
 import { Home } from './Home';
+import { Catalog } from './Catalog';
 import { Login } from './Login';
 import { SignUp } from './SignUp';
 import { AgdBancada } from './AgdBancada';
 import { Bancada } from './Bancada';
-import { Estoque } from './Estoque';
-import { AdcEstoque } from './AdcEstoque';
 import { Carrinho } from './Carrinho';
 import { EmailVerification } from './EmailVerification';
 import { AuthProvider } from './AuthProvider';
+import { CartProvider } from './CartProvider';
+import { ThemeProvider } from './ThemeProvider';
+import { FavoritesProvider } from './FavoritesProvider';
 import { Restaurant } from './Restaurant';
 import { Dish } from './Dish';
 import { Order } from './Order';
 import { Profile } from './Profile';
+import { Settings } from './Settings';
 import { Stock } from './Manager/Stock';
 import { StockAdd } from './Manager/StockAdd';
 import { Dashboard } from './Manager/Dashboard';
+import { Staff } from './Manager/Staff';
+import { Hub } from './Manager/Hub';
+import { Images } from './Manager/Images';
+import { Affiliations } from './Manager/Affiliations';
+import { Kitchen } from './Kitchen';
+import { KitchenDishes } from './Kitchen/Dishes';
+import { KitchenOverview } from './Kitchen/Overview';
+import { KitchenBookings } from './Kitchen/Bookings';
 
 /*Mudar isso depois pra ver como ficará melhor*/
 function ProtectedRoute({ children, allowedRoles }) {
@@ -46,31 +57,57 @@ function AccessibilitySetup() {
 
 function Protected({ children, roles }) { return <ProtectedRoute allowedRoles={roles}>{children}</ProtectedRoute>; }
 
+function NotFound() {
+  return (
+    <main className="auth-flow" role="status">
+      <h1>Página não encontrada</h1>
+      <p>O endereço que você acessou não existe ou foi movido.</p>
+      <p><NavLink to="/">Voltar para a página inicial</NavLink></p>
+    </main>
+  );
+}
+
 
 function App() {
 return (
     <AuthProvider>
+    <ThemeProvider>
+    <FavoritesProvider>
+    <CartProvider>
     <AccessibilitySetup />
     <Routes>
       <Route path='/' element={<Home/>}/>
+      <Route path='/catalogo' element={<Catalog/>}/>
       <Route path='/login' element={<Login/>}/>
       <Route path='/cadastro' element={<SignUp/>}/>
       <Route path='/cadastro/autenticar' element={<EmailVerification/>}/>
       <Route path='/catalogo/bancadas' element={<Protected><AgdBancada/></Protected>}/>
       <Route path='/bancada/:id' element={<Protected><Bancada/></Protected>}/>
-      <Route path='/estoque' element={<Protected roles={['admin']}><Estoque/></Protected>}/>
-      <Route path='/estoque/adicionar' element={<Protected roles={['admin']}><AdcEstoque/></Protected>}/>
-      <Route path='/carrinho' element={<Protected><Carrinho/></Protected>}/>
+      <Route path='/carrinho' element={<Protected roles={['customer']}><Carrinho/></Protected>}/>
       <Route path='/recuperar-senha' element={<PasswordRecovery/>}/>
       <Route path='/redefinir-senha' element={<PasswordReset/>}/>
-      <Route path='/restaurante/:id' element={<Restaurant/>}/>
-      <Route path='/prato/:id' element={<Dish/>}/>
-      <Route path='/pedido' element={<Order/>}/>
-      <Route path='/perfil' element={<Profile/>}/>
-      <Route path='/gerente/estoque' element={<Stock/>}/>
-      <Route path='/gerente/estoque/adicionar' element={<StockAdd/>}/>
-      <Route path='/gerente/dashboard' element={<Dashboard/>}/>
+      <Route path='/restaurante/:slug' element={<Restaurant/>}/>
+      <Route path='/restaurante/:slugRest/prato/:slugPrato' element={<Dish/>}/>
+      <Route path='/pedido' element={<Protected roles={['customer']}><Order/></Protected>}/>
+      <Route path='/perfil' element={<Protected><Profile/></Protected>}/>
+      <Route path='/configuracoes' element={<Protected><Settings/></Protected>}/>
+      <Route path='/gerente' element={<Protected roles={['admin']}><Hub/></Protected>}/>
+      <Route path='/gerente/estoque' element={<Protected roles={['admin']}><Stock/></Protected>}/>
+      <Route path='/gerente/estoque/adicionar' element={<Protected roles={['admin']}><StockAdd/></Protected>}/>
+      <Route path='/gerente/estoque/:id/editar' element={<Protected roles={['admin']}><StockAdd/></Protected>}/>
+      <Route path='/gerente/dashboard' element={<Protected roles={['admin']}><Dashboard/></Protected>}/>
+      <Route path='/gerente/staff' element={<Protected roles={['admin']}><Staff/></Protected>}/>
+      <Route path='/gerente/imagens' element={<Protected roles={['admin']}><Images/></Protected>}/>
+      <Route path='/gerente/filiacoes' element={<Protected roles={['admin']}><Affiliations/></Protected>}/>
+      <Route path='/cozinha' element={<Protected roles={['cook','admin']}><Kitchen/></Protected>}/>
+      <Route path='/cozinha/minhas-cozinhas' element={<Protected roles={['cook','admin']}><KitchenOverview/></Protected>}/>
+      <Route path='/cozinha/pratos' element={<Protected roles={['cook','admin']}><KitchenDishes/></Protected>}/>
+      <Route path='/cozinha/bancadas' element={<Protected roles={['cook','admin']}><KitchenBookings/></Protected>}/>
+      <Route path='*' element={<NotFound/>}/>
     </Routes>
+    </CartProvider>
+    </FavoritesProvider>
+    </ThemeProvider>
     </AuthProvider>
   )
 

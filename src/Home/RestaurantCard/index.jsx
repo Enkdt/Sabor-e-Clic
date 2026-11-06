@@ -1,28 +1,32 @@
 import { HeartIcon } from '@phosphor-icons/react'
+import { useFavorites } from '../../favoritesContext'
 import './RestaurantCard.css'
-import { useState } from 'react'
-export const RestaurantCard=({restaurantName,tag1,tag2})=>{
+export const RestaurantCard=({id,restaurantName,tag1,tag2,image})=>{
 
-    const [FavToggle, setFavToggle]=useState(false)
+    const { enabled, isFavorite, toggle }=useFavorites()
+    const fav=enabled && isFavorite(id)
 
     return(
         <div className='restaurantCard'>
-            {/*Placeholder da imagem do restaurante*/}
-            <div className='restaurantIcon'></div>
+            <div className='restaurantIcon' style={image ? { backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}></div>
             <div className='restaurantInfo'>
                 <p className='restaurantName'>{restaurantName}</p>
                 <ul className='restaurantTags'>
-                    <li>{`#${tag1}`}</li>
-                    <li>{`#${tag2}`}</li>
+                    {tag1 && <li>{`#${tag1}`}</li>}
+                    {tag2 && <li>{`#${tag2}`}</li>}
                 </ul>
             </div>
-            <HeartIcon onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setFavToggle(!FavToggle);
-                }} 
-                className={`restaurantFavIcon ${FavToggle ? "activated" : ""}`} 
-                size={24} weight='fill'/>
+            {enabled && (
+                <button
+                    type='button'
+                    className='restaurantFavBtn'
+                    aria-pressed={fav}
+                    aria-label={fav ? `Remover ${restaurantName} dos favoritos` : `Adicionar ${restaurantName} aos favoritos`}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(id); }}
+                >
+                    <HeartIcon className={`restaurantFavIcon ${fav ? 'activated' : ''}`} size={24} weight='fill'/>
+                </button>
+            )}
         </div>
     )
 }

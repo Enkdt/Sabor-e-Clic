@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { XIcon } from '@phosphor-icons/react'
 import { CartItem } from '../CartItem'
 import { NextBtn } from '../NextBtn'
-import { cartItemsList } from '../../data/cartData'
+import { useCart } from '../../cartContext'
 import { formatCurrency } from '../../utils/formatCurrency'
 import './CartDrawer.css'
 export const CartDrawer=({open,onClose})=>{
 
-    const [items,setItems]=useState(cartItemsList)
+    const { items, subtotal, setQuantity, removeItem }=useCart()
 
     useEffect(()=>{
         if(!open){
@@ -22,16 +22,6 @@ export const CartDrawer=({open,onClose})=>{
         window.addEventListener('keydown',closeOnEscape)
         return ()=>window.removeEventListener('keydown',closeOnEscape)
     },[open,onClose])
-
-    const total=items.reduce((sum,item)=>sum+item.price*item.quantity,0)
-
-    const changeQuantity=(id,quantity)=>{
-        setItems(items.map((item)=>item.id===id ? {...item,quantity} : item))
-    }
-
-    const removeItem=(id)=>{
-        setItems(items.filter((item)=>item.id!==id))
-    }
 
     return(
         <div className={`cartDrawerOverlay ${open ? 'open' : ''}`} onClick={onClose}>
@@ -47,10 +37,10 @@ export const CartDrawer=({open,onClose})=>{
                     {items.length===0 && <p className='cartDrawerEmpty'>Seu carrinho está vazio</p>}
                     {items.map((item)=>(
                         <CartItem
-                            key={item.id}
-                            item={item}
-                            onQuantityChange={(quantity)=>changeQuantity(item.id,quantity)}
-                            onRemove={()=>removeItem(item.id)}
+                            key={item.id_prato}
+                            item={{ id: item.id_prato, name: item.nome, price: item.preco, quantity: item.quantity, image: item.imagem }}
+                            onQuantityChange={(quantity)=>setQuantity(item.id_prato,quantity)}
+                            onRemove={()=>removeItem(item.id_prato)}
                         />
                     ))}
                 </div>
@@ -58,7 +48,7 @@ export const CartDrawer=({open,onClose})=>{
                 <div className='cartDrawerFooter'>
                     <div className='cartDrawerTotal'>
                         <span>Total :</span>
-                        <span>{formatCurrency(total)}</span>
+                        <span>{formatCurrency(subtotal)}</span>
                     </div>
                     <NavLink to='/pedido' className='cartDrawerLink' onClick={onClose}>
                         <NextBtn text='Continuar'/>

@@ -32,7 +32,8 @@ class Config:
     DATABASE = Path(
         os.environ.get("DATABASE", str(BASE_DIR / "instances" / "app.db"))
     ).expanduser().resolve() # Normaliza o caminho.
-    SQLALCHEMY_DATABASE_URI = f"sqlite:///{DATABASE}"
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL") # DATABASE URL = NEON URL
+    # SQLALCHEMY_DATABASE_URI = f"sqlite:///{DATABASE}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"hide_parameters": True}
 

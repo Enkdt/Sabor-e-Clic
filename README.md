@@ -25,7 +25,6 @@
 <p align="center"> 
 Sabor & Clic é um projeto baseado nas dark kitchens que reúne microempreededores, redes de delivery e outros focados em culinária vegana.
 O fim deste projeto é facilitar e melhorar a experiência de gerência para os cozinheiros a se encontrarem com o seu devido cliente.
-Para que fosse desenvolvido esse projeto, foram utilizadas diversas linguagens de programação e ferramentas, estas sendo listadas abaixo.
 </p>
 
 ---

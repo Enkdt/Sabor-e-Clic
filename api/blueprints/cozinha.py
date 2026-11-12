@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from decorators import admin, cook, permission, validar
 from extensions import db
 from models.crud import CRUD
+from models import services
 from models.pedido import Pedido
 from models.associacao import PedidoPrato
 from validations import check_json
@@ -50,16 +51,27 @@ def listar_itens_cozinha():
     meus = _restaurantes_do_usuario()
     if not meus:
         return jsonify({"itens": []})
-    # Só itens de pedidos pagos (o fluxo da cozinha começa após o pagamento).
+    # PERF-001: filtra restaurante + status direto no SQL (não em Python) e faz
+    # eager-load das relações usadas por _item_json (evita N+1 por item).
+    from sqlalchemy.orm import joinedload
+    from models.restaurante import Prato
+    from models.usuario import Cliente, Usuario
     itens = db.session.scalars(
-        db.select(PedidoPrato).join(Pedido, PedidoPrato.id_pedido == Pedido.id).where(Pedido.status == "pago")
+        db.select(PedidoPrato)
+        .join(Pedido, PedidoPrato.id_pedido == Pedido.id)
+        .join(Prato, PedidoPrato.id_prato == Prato.id)
+        .where(
+            Pedido.status == "pago",
+            Prato.id_restaurante.in_(meus),
+            PedidoPrato.status.in_(("aguardando", "confirmado")),
+        )
+        .options(
+            joinedload(PedidoPrato.prato).joinedload(Prato.restaurante),
+            joinedload(PedidoPrato.pedido).joinedload(Pedido.cliente).joinedload(Cliente.usuario),
+        )
     ).all()
-    visiveis = [
-        i for i in itens
-        if i.prato.id_restaurante in meus and i.status in ("aguardando", "confirmado")
-    ]
-    visiveis.sort(key=lambda i: (i.status != "aguardando", -i.id_pedido))
-    return jsonify({"itens": [_item_json(i) for i in visiveis]})
+    itens = sorted(itens, key=lambda i: (i.status != "aguardando", -i.id_pedido))
+    return jsonify({"itens": [_item_json(i) for i in itens]})
 
 
 def _carregar_item(id_pedido, id_prato):
@@ -113,11 +125,10 @@ def negar_item(id_pedido, id_prato):
         return err_json("INVALID_TRANSITION", f"Item não pode ser negado (estado atual: {item.status}).", status=409)
 
     try:
-        # Nega o item e estorna o valor dele ao saldo do cliente.
-        cliente = item.pedido.cliente
-        novo_saldo = Decimal(str(cliente.saldo)) + Decimal(str(item.preco_total))
-        CRUD.update.cliente(cliente.id_usuario, {"saldo": novo_saldo})
-        CRUD.update.pedido_prato((id_pedido, id_prato), {"status": "negado", "motivo_negacao": motivo})
+        # Nega o item e estorna o valor dele ao saldo do cliente em uma transação.
+        services.negar_item(id_pedido=id_pedido, id_prato=id_prato, motivo=motivo)
+    except services.DomainError as error:
+        return err_json(error.code, error.message, status=error.status)
     except SQLAlchemyError:
         db.session.rollback()
         logger.exception("Falha ao negar item %s/%s.", id_pedido, id_prato)

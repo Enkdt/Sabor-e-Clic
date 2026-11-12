@@ -41,3 +41,5 @@ from .associacao import (
     PratoIngrediente,
     PratoCategoria,
 )
+
+from .email_outbox import EmailOutbox

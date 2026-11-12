@@ -696,11 +696,11 @@ _EDITABLE = {
     "cardapio": {"nome", "tipo"},
     "restaurante": {"nome", "imagem", "slug"},
     "restaurante_endereco": {"rua", "numero", "complemento", "bairro", "cidade", "estado"},
-    "prato": {"nome", "preco_unidade", "quantidade", "imagem", "descricao", "slug"},
+    "prato": {"nome", "preco_unidade", "quantidade", "imagem", "descricao", "slug", "disponivel"},
     "categoria": {"nome"},
     "ingrediente": {"nome", "validade", "unidade", "quantidade", "imagem"},
     "agendamento": {"horario_agendado", "tempo_agendado", "preco_total", "status", "motivo_negacao"},
-    "bancada": {"preco_hora"},
+    "bancada": {"preco_hora", "id_restaurante"},
     "bancada_endereco": {"rua", "numero", "complemento", "bairro", "cidade", "estado"},
     "bancada_horario_disponivel": {"inicio", "fim"},
     "equipamento": {"nome", "tipo"},
@@ -713,12 +713,12 @@ _EDITABLE = {
 }
 
 
-def _create(model, data, *, relationships=None, partial=False):
+def _create(model, data, *, relationships=None, partial=False, commit=True):
     # Valida, monta e persiste o modelo e seus relacionamentos em uma transação.
     _validate_data(model, data, partial=partial)
     if model is Agendamento:
         _ensure_booking_available(data)
-    return _persist(model(**data, **(relationships or {})))
+    return _persist(model(**data, **(relationships or {})), commit=commit)
 
 
 def _create_user_profile(profile_model, nome, email, senha, profile_data):
@@ -881,7 +881,7 @@ def _load_restaurant_category_entities(id_restaurante, id_categoria):
     return restaurant, category
 
 
-def _update_record(model, identity, changes, editable_fields):
+def _update_record(model, identity, changes, editable_fields, *, commit=True):
     # Limita alterações aos campos permitidos e valida o estado completo atualizado.
     if not isinstance(changes, dict) or not changes:
         raise ValueError("Informe ao menos um campo para atualizar.")
@@ -914,10 +914,10 @@ def _update_record(model, identity, changes, editable_fields):
         _ensure_booking_available(values, exclude_id=record.id)
     for field, value in changes.items():
         setattr(record, field, value)
-    return _commit(record)
+    return _commit(record, commit=commit)
 
 
-def _delete_record(model, identity):
+def _delete_record(model, identity, *, commit=True):
     # Busca e exclui somente registros do modelo associado a esta operação.
     _validate_identity(model, identity)
     try:
@@ -925,9 +925,13 @@ def _delete_record(model, identity):
         if record is None:
             return False
         db.session.delete(record)
-        db.session.commit()
+        if commit:
+            db.session.commit()
+        else:
+            db.session.flush()
     except SQLAlchemyError:
-        db.session.rollback()
+        if commit:
+            db.session.rollback()
         logger.exception("Falha ao excluir registro de %s.", model.__name__)
         raise
     return True
@@ -1186,19 +1190,24 @@ def _validate_credentials(nome, email, senha):
         raise ValueError("A senha deve ter ao menos 8 caracteres.")
 
 
-def _persist(record):
-    # Adiciona a instância à sessão e confirma a transação.
+def _persist(record, *, commit=True):
+    # Adiciona a instância à sessão e confirma (ou apenas faz flush em transação externa).
     db.session.add(record)
-    return _commit(record)
+    return _commit(record, commit=commit)
 
 
-def _commit(record):
-    # Confirma a transação ou desfaz todas as alterações se o banco falhar.
+def _commit(record, *, commit=True):
+    # Confirma a transação ou, dentro de uma transação externa (commit=False),
+    # apenas faz flush para disparar validações/erros do banco sem encerrar a transação.
     try:
-        db.session.commit()
+        if commit:
+            db.session.commit()
+        else:
+            db.session.flush()
     except SQLAlchemyError:
-        db.session.rollback()
-        logger.exception("Falha ao confirmar gravação de %s.", type(record).__name__)
+        if commit:
+            db.session.rollback()
+        logger.exception("Falha ao gravar %s.", type(record).__name__)
         raise
     return record
 

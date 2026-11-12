@@ -403,7 +403,7 @@ def ensure_dish_ingredient(dish, ingredient, unit, quantity):
         )
 
 
-def ensure_bench(address, hourly_price):
+def ensure_bench(address, hourly_price, id_restaurante=None):
     matching_addresses = CRUD.read.enderecos_bancada(filters={
         "rua": address["rua"],
         "numero": address["numero"],
@@ -411,11 +411,16 @@ def ensure_bench(address, hourly_price):
 
     if matching_addresses:
         bench = CRUD.read.bancada(matching_addresses[0].id_bancada)
+        updates = {}
         if Decimal(str(bench.preco_hora)) != hourly_price:
-            CRUD.update.bancada(bench.id, {"preco_hora": hourly_price})
+            updates["preco_hora"] = hourly_price
+        if id_restaurante is not None and bench.id_restaurante != id_restaurante:
+            updates["id_restaurante"] = id_restaurante
+        if updates:
+            CRUD.update.bancada(bench.id, updates)
             bench = CRUD.read.bancada(bench.id)
     else:
-        bench = CRUD.create.bancada(preco_hora=hourly_price)
+        bench = CRUD.create.bancada(preco_hora=hourly_price, id_restaurante=id_restaurante)
         CRUD.create.bancada_endereco(
             id_bancada=bench.id,
             id=1,
@@ -543,6 +548,16 @@ def ensure_order(order_data, customers, cooks, dishes):
 
 
 def seed():
+    # SEC-004: o seed de demonstração NUNCA roda em produção, mesmo chamado como
+    # função (não só via main()). Usa o app ativo no contexto, com fallback ao global.
+    try:
+        from flask import current_app
+        environment = current_app.config.get("ENVIRONMENT")
+    except Exception:
+        environment = app.config.get("ENVIRONMENT")
+    if environment in {"production", "prod"}:
+        raise RuntimeError("O seed de demonstração não pode ser executado em produção.")
+
     dishes = {}
     ingredients = {}
 
@@ -720,10 +735,29 @@ def seed():
         },
     ]
 
+    # SEC-002: as bancadas de demonstração pertencem aos dois primeiros
+    # restaurantes; e os cozinheiros que fazem os agendamentos são filiados a eles,
+    # de modo que o fluxo de aceitar/negar funcione respeitando a propriedade.
+    demo_restaurantes = sorted(CRUD.read.restaurantes(), key=lambda r: r.id)
+    rest_bancada_1 = demo_restaurantes[0] if demo_restaurantes else None
+    rest_bancada_2 = demo_restaurantes[1] if len(demo_restaurantes) > 1 else rest_bancada_1
+
     benches = [
-        ensure_bench(bench_addresses[0], Decimal("40.00")),
-        ensure_bench(bench_addresses[1], Decimal("45.00")),
+        ensure_bench(bench_addresses[0], Decimal("40.00"),
+                     id_restaurante=rest_bancada_1.id if rest_bancada_1 else None),
+        ensure_bench(bench_addresses[1], Decimal("45.00"),
+                     id_restaurante=rest_bancada_2.id if rest_bancada_2 else None),
     ]
+
+    # Filia os cozinheiros que fazem os agendamentos de demonstração às bancadas.
+    if rest_bancada_1 is not None:
+        CRUD.create.cozinheiro_restaurante(
+            cooks["rafael.cozinha@sabor.test"].id_usuario, rest_bancada_1.id
+        )
+    if rest_bancada_2 is not None:
+        CRUD.create.cozinheiro_restaurante(
+            cooks["julia.ferraz@sabor.test"].id_usuario, rest_bancada_2.id
+        )
 
     equipment_data = [
         ("Forno industrial", "Cocção", 1),

@@ -29,6 +29,11 @@ class Bancada(db.Model):
     __tablename__ = 'bancada'
     id: Mapped[int] = mapped_column(primary_key=True)
     preco_hora: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False, default=40)
+    # SEC-002: a bancada pertence a um restaurante; cozinheiros filiados a esse
+    # restaurante (ou admin) gerenciam seus agendamentos. Nullable: bancadas
+    # legadas sem dono ficam sob responsabilidade apenas do admin.
+    id_restaurante: Mapped[int | None] = mapped_column(ForeignKey('restaurante.id'), nullable=True)
+    restaurante: Mapped['Restaurante'] = relationship(back_populates='bancadas')
     agendamento: Mapped[list['Agendamento']] = relationship(back_populates='bancada')
     bancada_endereco: Mapped[list['BancadaEndereco']] = relationship(back_populates='bancada')
     bancada_horario_disponivel: Mapped[list['BancadaHorarioDisponivel']] = relationship(back_populates='bancada',cascade='all, delete-orphan')

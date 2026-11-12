@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from decorators import admin, cook, customer, permission, validar
 from extensions import db
 from models.crud import CRUD
+from models import services
 from models.restaurante import Categoria, Restaurante
 from models.bancada import Bancada, Agendamento
 from validations import check_json
@@ -126,21 +127,18 @@ def criar_agendamento(bancada_id):
         return err_json("VALIDATION_FAILED", str(error) or "Preencha os dados do agendamento corretamente.", status=400)
 
     cliente = g.current_user.cliente
-    saldo = Decimal(str(cliente.saldo))
-    if saldo < preco:
-        return err_json("INSUFFICIENT_FUNDS", "Saldo insuficiente para solicitar esta bancada.", status=402)
 
     try:
-        # Cobra ao pedir; o agendamento nasce 'pendente'. _create valida sobreposição com ACEITOS.
-        agendamento = CRUD.create.agendamento(
+        # Débito atômico + criação do agendamento 'pendente' em uma transação.
+        agendamento = services.criar_agendamento_com_debito(
             id_cliente=cliente.id_usuario,
             id_bancada=bancada_id,
-            horario_agendado=horario,
-            tempo_agendado=duracao,
-            preco_total=preco,
-            status="pendente",
+            horario=horario,
+            duracao=duracao,
+            preco=preco,
         )
-        CRUD.update.cliente(cliente.id_usuario, {"saldo": saldo - preco})
+    except services.DomainError as error:
+        return err_json(error.code, error.message, status=error.status)
     except ValueError as error:
         db.session.rollback()
         return err_json("BOOKING_CONFLICT", str(error), status=409)
@@ -165,37 +163,54 @@ def meus_agendamentos():
     return jsonify({"agendamentos": [_agendamento_json(a) for a in ags]})
 
 
+def _restaurantes_do_cozinheiro():
+    """IDs de restaurantes aos quais o cozinheiro autenticado está filiado."""
+    cozinheiro = getattr(g.current_user, "cozinheiro", None)
+    if cozinheiro is None:
+        return set()
+    return {r.id for r in cozinheiro.restaurantes}
+
+
+def _pode_gerenciar_agendamento(ag):
+    """SEC-002: admin gerencia tudo; cozinheiro só agendamentos de bancadas de um
+    restaurante ao qual está filiado. Bancada sem dono (id_restaurante None) é
+    exclusiva do admin."""
+    if g.current_role == "admin":
+        return True
+    if g.current_role != "cook":
+        return False
+    bancada = ag.bancada
+    if bancada is None or bancada.id_restaurante is None:
+        return False
+    return bancada.id_restaurante in _restaurantes_do_cozinheiro()
+
+
 @bancadas_bp.get("/agendamentos/pendentes")
 @validar
 @permission((cook, admin))
 def agendamentos_pendentes():
-    """Fila de pedidos de bancada aguardando aceite (cozinheiro vinculado ou admin)."""
+    """Fila de pedidos de bancada aguardando aceite, escopada por propriedade (SEC-002)."""
     ags = CRUD.read.agendamentos(filters={"status": "pendente"})
+    # Filtra pelo que o usuário tem autoridade para gerenciar.
+    ags = [a for a in ags if _pode_gerenciar_agendamento(a)]
     ags = sorted(ags, key=lambda a: a.id)
     return jsonify({"agendamentos": [_agendamento_json(a) for a in ags]})
-
-
-def _pode_aprovar():
-    # Cozinheiro vinculado a algum restaurante, ou admin.
-    if g.current_role == "admin":
-        return True
-    return g.current_role == "cook" and g.current_user.cozinheiro is not None and bool(g.current_user.cozinheiro.restaurantes)
 
 
 @bancadas_bp.post("/agendamentos/<int:ag_id>/aceitar")
 @validar
 @permission((cook, admin))
 def aceitar_agendamento(ag_id):
-    if not _pode_aprovar():
-        return err_json("PERMISSION_DENIED", "Apenas cozinheiros vinculados ou administradores aprovam agendamentos.", status=403)
     ag = CRUD.read.agendamento(ag_id)
     if ag is None:
         return err_json("NOT_FOUND", "Agendamento não encontrado.", status=404)
-    if ag.status != "pendente":
-        return err_json("INVALID_TRANSITION", f"Agendamento não está pendente (estado: {ag.status}).", status=409)
+    if not _pode_gerenciar_agendamento(ag):
+        return err_json("PERMISSION_DENIED", "Você não gerencia agendamentos desta bancada.", status=403)
     try:
-        # Ao aceitar, revalida sobreposição com outros ACEITOS (via _ensure_booking_available no update).
-        CRUD.update.agendamento(ag_id, {"status": "aceito"})
+        # Transição condicional 'pendente'->'aceito' + revalidação de sobreposição, atômica.
+        services.aceitar_agendamento(ag_id=ag_id)
+    except services.DomainError as error:
+        return err_json(error.code, error.message, status=error.status)
     except ValueError as error:
         db.session.rollback()
         return err_json("BOOKING_CONFLICT", str(error), status=409)
@@ -210,8 +225,6 @@ def aceitar_agendamento(ag_id):
 @validar
 @permission((cook, admin))
 def negar_agendamento(ag_id):
-    if not _pode_aprovar():
-        return err_json("PERMISSION_DENIED", "Apenas cozinheiros vinculados ou administradores aprovam agendamentos.", status=403)
     data = request.get_json(silent=True)
     if not check_json(data):
         return err_json("INVALID_JSON", "Envie os dados em formato JSON válido.", status=400)
@@ -222,14 +235,13 @@ def negar_agendamento(ag_id):
     ag = CRUD.read.agendamento(ag_id)
     if ag is None:
         return err_json("NOT_FOUND", "Agendamento não encontrado.", status=404)
-    if ag.status != "pendente":
-        return err_json("INVALID_TRANSITION", f"Agendamento não está pendente (estado: {ag.status}).", status=409)
+    if not _pode_gerenciar_agendamento(ag):
+        return err_json("PERMISSION_DENIED", "Você não gerencia agendamentos desta bancada.", status=403)
     try:
-        # Estorna o valor ao cliente e marca negado.
-        if ag.cliente is not None:
-            novo_saldo = Decimal(str(ag.cliente.saldo)) + Decimal(str(ag.preco_total))
-            CRUD.update.cliente(ag.id_cliente, {"saldo": novo_saldo})
-        CRUD.update.agendamento(ag_id, {"status": "negado", "motivo_negacao": motivo})
+        # Transição condicional 'pendente'->'negado' + estorno atômico (sem estorno duplo).
+        services.negar_agendamento(ag_id=ag_id, motivo=motivo)
+    except services.DomainError as error:
+        return err_json(error.code, error.message, status=error.status)
     except SQLAlchemyError:
         db.session.rollback()
         logger.exception("Falha ao negar agendamento %s.", ag_id)

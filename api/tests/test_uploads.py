@@ -6,6 +6,8 @@ import logging
 import tempfile
 import unittest
 
+from PIL import Image
+
 from app import create_app
 from models.crud import CRUD
 
@@ -13,11 +15,14 @@ logging.disable(logging.CRITICAL)
 
 PASSWORD = "Senha!Forte123"
 
-# PNG mínimo válido (assinatura + resto do arquivo 1x1).
-PNG_BYTES = bytes.fromhex(
-    "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4"
-    "890000000a49444154789c6360000002000154a24f5f0000000049454e44ae426082"
-)
+
+def _png_bytes(size=(8, 8)):
+    buf = io.BytesIO()
+    Image.new("RGB", size, (100, 150, 200)).save(buf, format="PNG")
+    return buf.getvalue()
+
+
+PNG_BYTES = _png_bytes()
 
 
 def _make_app():
@@ -105,6 +110,13 @@ class UploadTests(unittest.TestCase):
         a = self.client.patch("/api/perfil/avatar", json={"avatar": key})
         self.assertEqual(a.status_code, 200, a.get_json())
         self.assertTrue(a.get_json()["avatar"].endswith(key))
+
+    def test_assigning_arbitrary_key_is_rejected(self):
+        # API-002: chave que não existe no armazenamento não pode ser associada.
+        self._login("admin@example.com")
+        r = self.client.patch(f"/api/restaurantes/{self.rest_id}/imagem",
+                              json={"imagem": "inexistente_1234.png"})
+        self.assertEqual(r.status_code, 400, r.get_json())
 
 
 if __name__ == "__main__":

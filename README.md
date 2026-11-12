@@ -63,4 +63,59 @@ O fim deste projeto é facilitar e melhorar a experiência de gerência para os 
   <a href="https://github.com/Enkdt">Thales Endo</a>
 </p>
 
+---
+
+## Desenvolvimento
+
+Stack: React + Vite (frontend) · Flask + SQLAlchemy + Alembic (API) · SQLite em
+dev/teste, PostgreSQL (Neon) em produção · deploy na Vercel.
+
+### Setup local
+
+```bash
+# frontend (raiz)
+npm install
+npm run dev            # http://localhost:5173
+
+# API (pasta api/)
+cd api
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env   # preencha os valores; gere segredos fortes
+python migrations.py upgrade   # aplica o esquema (NÃO roda no boot do app)
+python app.py          # API em http://127.0.0.1:5000
+```
+
+Gere segredos com `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
+Variáveis e detalhes da API: veja [`api/README.md`](api/README.md) e
+[`api/.env.example`](api/.env.example). Nunca faça commit do `.env`.
+
+### Testes
+
+```bash
+# backend (pasta api/, venv ativa)
+python -m unittest discover -s tests -p "test_*.py"
+
+# frontend (raiz)
+npm run lint
+npm run build
+
+# E2E Playwright (banco SQLite descartável e isolado)
+cd api && python e2e_server.py     # sobe a API de teste
+npm run test:e2e                   # noutro terminal, na raiz
+```
+
+### Migrações
+
+As migrações não rodam na inicialização do app. Aplique por release:
+`cd api && python migrations.py upgrade` (`current` mostra a revisão,
+`stamp-head` adota a baseline sem rodar DDL).
+
+### Deploy (Vercel)
+
+Defina no ambiente da Vercel: `APP_ENV=production`, `SECRET_KEY`, `JWT_SECRET_KEY`,
+`FRONTEND_BASE_URL` (HTTPS), `DATABASE_URL` (Neon), `STORAGE_BACKEND=blob` +
+`BLOB_READ_WRITE_TOKEN` (Vercel Blob), `RATELIMIT_STORAGE_URI` (Upstash Redis).
+Rode `python migrations.py upgrade` uma vez por release. Funcionalidades de
+pagamento são simuladas (sem gateway real).
 

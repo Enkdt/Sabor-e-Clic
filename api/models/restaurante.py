@@ -32,6 +32,7 @@ class Restaurante(db.Model):
     cozinheiros: Mapped[list['Cozinheiro']] = relationship(secondary='cozinheiro_restaurante', back_populates='restaurantes')
     prato: Mapped[list['Prato']] = relationship(back_populates='restaurante')
     restaurante_endereco: Mapped[list['RestauranteEndereco']] = relationship(back_populates='restaurante')
+    bancadas: Mapped[list['Bancada']] = relationship(back_populates='restaurante')
 
 class RestauranteEndereco(db.Model):
     __tablename__ = 'restaurante_endereco'
@@ -53,7 +54,11 @@ class Prato(db.Model):
     nome: Mapped[str] = mapped_column(String(50), nullable=False)
     slug: Mapped[str | None] = mapped_column(String(70), nullable=True)
     preco_unidade: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
+    # DATA-003: `quantidade` NÃO é estoque consumível; o prato é uma "receita"
+    # cuja disponibilidade é controlada por `disponivel` (liga/desliga pelo
+    # cozinheiro do restaurante dono, ou admin). Nenhum pedido decrementa estoque.
     quantidade: Mapped[int] = mapped_column(nullable=False)
+    disponivel: Mapped[bool] = mapped_column(nullable=False, default=True)
     descricao: Mapped[str | None] = mapped_column(String(300), nullable=True)
     imagem: Mapped[str | None] = mapped_column(String(100), nullable=True)
     restaurante: Mapped['Restaurante'] = relationship(back_populates='prato')

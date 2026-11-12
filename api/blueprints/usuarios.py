@@ -163,6 +163,9 @@ def definir_foto():
     if not isinstance(key, str) or not key.strip():
         return err_json("VALIDATION_FAILED", "Informe a imagem (chave do upload).", status=400)
     key = key.strip()
+    # API-002: a chave precisa existir neste armazenamento.
+    if not storage.key_exists(key):
+        return err_json("VALIDATION_FAILED", "Imagem inválida ou inexistente.", status=400)
     uid = g.current_user.id
     try:
         if g.current_role == "cook":

@@ -1,0 +1,72 @@
+.confirmDialogOverlay{
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: color-mix(in srgb, #000 55%, transparent);
+}
+
+.confirmDialog{
+    width: 100%;
+    max-width: 420px;
+    background: var(--surface-color);
+    color: var(--text-color);
+    border-radius: .6rem;
+    padding: 1.25rem 1.25rem 1rem;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    font-family: Poppins, system-ui, sans-serif;
+}
+
+.confirmDialogTitle{
+    margin: 0 0 .5rem;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.confirmDialogMsg{
+    margin: 0 0 1.25rem;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--muted-text-color);
+}
+
+.confirmDialogActions{
+    display: flex;
+    justify-content: flex-end;
+    gap: .6rem;
+}
+
+.confirmDialogActions button{
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    padding: .5rem 1.1rem;
+    border-radius: .4rem;
+    transition: all 0.2s ease;
+}
+
+.confirmDialogCancel{
+    border: 1px solid var(--muted-text-color);
+    background: transparent;
+    color: var(--text-color);
+}
+
+.confirmDialogConfirm{
+    border: 1px solid var(--brand-color);
+    background: var(--brand-color);
+    color: var(--bg-color);
+}
+
+.confirmDialogConfirm--danger{
+    border-color: #b3261e;
+    background: #b3261e;
+    color: #fffaf5;
+}
+
+.confirmDialogActions button:disabled{
+    opacity: .6;
+    cursor: not-allowed;
+}

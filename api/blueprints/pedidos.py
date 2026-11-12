@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from decorators import admin, customer, permission, validar
 from extensions import db
 from models.crud import CRUD
+from models import services
 from validations import check_json
 from utils import err_json
 import storage as _storage
@@ -118,35 +119,25 @@ def criar_pedido():
         prato = CRUD.read.prato(id_prato)
         if prato is None:
             return err_json("NOT_FOUND", f"Prato {id_prato} não encontrado.", status=404)
+        # DATA-003: só pratos disponíveis podem ser pedidos.
+        if not prato.disponivel:
+            return err_json("DISH_UNAVAILABLE", f"O prato '{prato.nome}' está indisponível.", status=409)
         preco_und = Decimal(str(prato.preco_unidade))
         preco_total = (preco_und * quantidade).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         total += preco_total
         linhas.append((id_prato, quantidade, preco_und, preco_total))
 
-    pedido = None
     try:
-        pedido = CRUD.create.pedido(
+        pedido = services.criar_pedido_com_itens(
             id_cliente=g.current_user.cliente.id_usuario,
             data=date.today(),
             total=total,
             status="preparando",
             tempo_estimado=TEMPO_ESTIMADO_PADRAO,
+            linhas=linhas,
         )
-        for id_prato, quantidade, preco_und, preco_total in linhas:
-            CRUD.create.pedido_prato(
-                id_pedido=pedido.id,
-                id_prato=id_prato,
-                qtd=quantidade,
-                preco_und=preco_und,
-                preco_total=preco_total,
-            )
     except SQLAlchemyError:
-        db.session.rollback()
-        if pedido is not None:
-            try:
-                CRUD.delete.pedido(pedido.id)
-            except SQLAlchemyError:
-                logger.exception("Falha ao remover pedido parcial %s.", pedido.id)
+        # A transação já fez rollback no serviço: nada parcial é persistido.
         logger.exception("Falha ao criar pedido.")
         return err_json("DATABASE_ERROR", "Não foi possível criar o pedido.", status=500)
 
@@ -201,18 +192,19 @@ def pagar_pedido(id):
     if pedido.status == "pago":
         return jsonify({"success": True, "pedido": _pedido_json(pedido)})
 
-    cliente = g.current_user.cliente
-    saldo = Decimal(str(cliente.saldo))
-    total = Decimal(str(pedido.total))
-    if saldo < total:
-        return err_json("INSUFFICIENT_FUNDS", "Saldo insuficiente para este pedido.", status=402)
-
     try:
-        # Debita o saldo e marca o pedido como pago numa transação; itens já estão 'aguardando'.
-        CRUD.update.cliente(cliente.id_usuario, {"saldo": saldo - total})
-        pedido = CRUD.update.pedido(id, {"status": "pago", "metodo_pagamento": metodo})
+        pedido = services.pagar_pedido(
+            id_pedido=id,
+            id_cliente=g.current_user.cliente.id_usuario,
+            metodo=metodo,
+            total=Decimal(str(pedido.total)),
+        )
+    except services.DomainError as error:
+        if error.code == "ALREADY_PAID":
+            # Corrida: outra requisição pagou primeiro. Idempotente.
+            return jsonify({"success": True, "pedido": _pedido_json(CRUD.read.pedido(id))})
+        return err_json(error.code, error.message, status=error.status)
     except SQLAlchemyError:
-        db.session.rollback()
         logger.exception("Falha ao registrar pagamento do pedido %s.", id)
         return err_json("DATABASE_ERROR", "Não foi possível registrar o pagamento.", status=500)
 
@@ -276,8 +268,18 @@ def criar_avaliacao(id):
     if not isinstance(id_prato, int):
         return err_json("VALIDATION_FAILED", "Informe o id_prato a avaliar.", status=400)
     # O prato precisa pertencer a este pedido.
-    if not any(item.id_prato == id_prato for item in pedido.associacao_prato):
+    item = next((i for i in pedido.associacao_prato if i.id_prato == id_prato), None)
+    if item is None:
         return err_json("VALIDATION_FAILED", "Este prato não faz parte do pedido.", status=400)
+    # SEC-005: elegibilidade por item — só o item efetivamente ENTREGUE pode ser
+    # avaliado. Itens aguardando/confirmado/pronto/negado são recusados no servidor
+    # (não confiar na visibilidade do front-end).
+    if _status_efetivo_item(item) != "entregue":
+        return err_json(
+            "NOT_ELIGIBLE",
+            "Só é possível avaliar um item após a entrega.",
+            status=409,
+        )
 
     nota = data.get("nota")
     if not isinstance(nota, int) or not (1 <= nota <= 5):

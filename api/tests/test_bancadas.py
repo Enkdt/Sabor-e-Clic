@@ -38,13 +38,18 @@ def _seed(app):
         CRUD.update.verificar_email(cook.id_usuario)
         rest = CRUD.create.restaurante(nome="Resto", slug="resto")
         CRUD.create.cozinheiro_restaurante(cook.id_usuario, rest.id)  # cozinheiro vinculado
+        # SEC-002: segundo restaurante + cozinheiro para testar isolamento entre donos.
+        cook2 = CRUD.create.cozinheiro(nome="Outro", email="outro@example.com", senha=PASSWORD, especialidade="geral")
+        CRUD.update.verificar_email(cook2.id_usuario)
+        rest2 = CRUD.create.restaurante(nome="Outro Resto", slug="outro-resto")
+        CRUD.create.cozinheiro_restaurante(cook2.id_usuario, rest2.id)
         for email in ("ana@example.com", "bruno@example.com"):
             c = CRUD.create.cliente_com_endereco(
                 nome="C", email=email, senha=PASSWORD,
                 rua="R", numero="1", cep="01001-000", pais="BR", estado="SP", cidade="SP", bairro="C",
             )
             CRUD.update.verificar_email(c.id)
-        bancada = CRUD.create.bancada(preco_hora=Decimal("60.00"))
+        bancada = CRUD.create.bancada(preco_hora=Decimal("60.00"), id_restaurante=rest.id)
         CRUD.create.bancada_endereco(id_bancada=bancada.id, id=1, rua="R", numero="1", complemento="Bancada A", bairro="C", cidade="SP", estado="SP")
         CRUD.create.bancada_horario_disponivel(id_bancada=bancada.id, id=1, inicio=time(8, 0), fim=time(18, 0))
         return bancada.id
@@ -126,6 +131,35 @@ class BancadaTests(unittest.TestCase):
             CRUD.update.cliente(ana.id_usuario, {"saldo": Decimal("0.00")})
         r = self._pedir(_amanha(10), _amanha(11))
         self.assertEqual(r.status_code, 402, r.get_json())
+
+    def test_cook_from_other_restaurant_cannot_accept(self):
+        # SEC-002: cozinheiro de OUTRO restaurante não gerencia esta bancada.
+        self._login("ana@example.com")
+        ag_id = self._pedir(_amanha(10), _amanha(11)).get_json()["agendamento"]["id"]
+        self.client.post("/api/logout")
+        self._login("outro@example.com")
+        r = self.client.post(f"/api/bancadas/agendamentos/{ag_id}/aceitar")
+        self.assertEqual(r.status_code, 403, r.get_json())
+        d = self.client.post(f"/api/bancadas/agendamentos/{ag_id}/negar", json={"motivo": "x"})
+        self.assertEqual(d.status_code, 403, d.get_json())
+
+    def test_cook_from_other_restaurant_does_not_see_pending(self):
+        # SEC-002: a fila de pendentes é escopada por propriedade.
+        self._login("ana@example.com")
+        self._pedir(_amanha(10), _amanha(11))
+        self.client.post("/api/logout")
+        self._login("outro@example.com")
+        fila = self.client.get("/api/bancadas/agendamentos/pendentes")
+        self.assertEqual(fila.status_code, 200, fila.get_json())
+        self.assertEqual(fila.get_json()["agendamentos"], [])
+
+    def test_admin_can_manage_any_booking(self):
+        self._login("ana@example.com")
+        ag_id = self._pedir(_amanha(10), _amanha(11)).get_json()["agendamento"]["id"]
+        self.client.post("/api/logout")
+        self._login("admin@example.com")
+        r = self.client.post(f"/api/bancadas/agendamentos/{ag_id}/aceitar")
+        self.assertEqual(r.status_code, 200, r.get_json())
 
 
 if __name__ == "__main__":

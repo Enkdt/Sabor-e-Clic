@@ -2,11 +2,14 @@ import logging
 from decimal import Decimal, InvalidOperation
 
 from flask import Blueprint, g, jsonify, request
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from decorators import admin, cook, permission, validar
 from extensions import db
 from models.crud import CRUD
+from models.pedido import Avaliacao
+from models.restaurante import Prato
 from validations import check_json
 from utils import err_json, slugify
 import storage
@@ -14,6 +17,30 @@ import storage
 
 cardapio_bp = Blueprint("cardapio", __name__, url_prefix="/api")
 logger = logging.getLogger(__name__)
+
+
+def _ratings_por_restaurante(restaurante_ids=None):
+    """Agrega nota média e contagem de avaliações por restaurante (via Prato).
+
+    Uma única consulta agrupada evita N+1. Retorna {id_restaurante: (media, n)}.
+    """
+    if restaurante_ids is not None and not restaurante_ids:
+        return {}
+    statement = (
+        db.select(
+            Prato.id_restaurante,
+            func.avg(Avaliacao.nota),
+            func.count(Avaliacao.id),
+        )
+        .join(Avaliacao, Avaliacao.id_prato == Prato.id)
+        .group_by(Prato.id_restaurante)
+    )
+    if restaurante_ids is not None:
+        statement = statement.where(Prato.id_restaurante.in_(restaurante_ids))
+    resultado = {}
+    for id_restaurante, media, n in db.session.execute(statement).all():
+        resultado[id_restaurante] = (round(float(media), 2) if media is not None else None, int(n))
+    return resultado
 
 
 def _prato_json(prato):
@@ -24,6 +51,7 @@ def _prato_json(prato):
         "descricao": prato.descricao,
         "preco": str(prato.preco_unidade),
         "quantidade": prato.quantidade,
+        "disponivel": bool(prato.disponivel),
         "id_cardapio": prato.id_cardapio,
         "id_restaurante": prato.id_restaurante,
         "imagem": storage.url_for_key(prato.imagem) if prato.imagem else None,
@@ -40,13 +68,17 @@ def _prato_json(prato):
     }
 
 
-def _restaurante_json(restaurante, *, incluir_pratos=False):
+def _restaurante_json(restaurante, *, incluir_pratos=False, rating=None):
+    media, total_avaliacoes = (rating or (None, 0))
     dados = {
         "id": restaurante.id,
         "nome": restaurante.nome,
         "slug": restaurante.slug,
         "imagem": storage.url_for_key(restaurante.imagem) if restaurante.imagem else None,
         "categorias": [categoria.nome for categoria in restaurante.categorias],
+        # UX-001: avaliação real agregada; None quando não há avaliações.
+        "avaliacao_media": media,
+        "avaliacao_total": total_avaliacoes,
     }
     if incluir_pratos:
         dados["pratos"] = [_prato_json(prato) for prato in restaurante.prato]
@@ -68,7 +100,10 @@ def _buscar_restaurante(identificador):
 @cardapio_bp.get("/restaurantes")
 def listar_restaurantes():
     restaurantes = CRUD.read.restaurantes()
-    return jsonify({"restaurantes": [_restaurante_json(item) for item in restaurantes]})
+    ratings = _ratings_por_restaurante([r.id for r in restaurantes])
+    return jsonify({"restaurantes": [
+        _restaurante_json(item, rating=ratings.get(item.id)) for item in restaurantes
+    ]})
 
 
 @cardapio_bp.get("/restaurantes/<identificador>")
@@ -76,7 +111,10 @@ def obter_restaurante(identificador):
     restaurante = _buscar_restaurante(identificador)
     if restaurante is None:
         return err_json("NOT_FOUND", "Restaurante não encontrado.", status=404)
-    return jsonify({"restaurante": _restaurante_json(restaurante, incluir_pratos=True)})
+    ratings = _ratings_por_restaurante([restaurante.id])
+    return jsonify({"restaurante": _restaurante_json(
+        restaurante, incluir_pratos=True, rating=ratings.get(restaurante.id)
+    )})
 
 
 @cardapio_bp.get("/restaurantes/<rest>/pratos/<prato_slug>")
@@ -339,6 +377,37 @@ def atualizar_prato(id):
     return jsonify({"success": True, "prato": _prato_json(CRUD.read.prato(id))})
 
 
+@cardapio_bp.patch("/pratos/<int:id>/disponibilidade")
+@validar
+@permission((cook, admin))
+def alternar_disponibilidade_prato(id):
+    """DATA-003: liga/desliga a disponibilidade de um prato (receita).
+
+    Só o cozinheiro do restaurante dono (ou admin) pode alterar. Não há estoque:
+    o prato fica apenas disponível ou indisponível.
+    """
+    prato = CRUD.read.prato(id)
+    if prato is None:
+        return err_json("NOT_FOUND", "Prato não encontrado.", status=404)
+    if not _pode_gerir_restaurante(prato.id_restaurante):
+        return err_json("PERMISSION_DENIED", "Você não gerencia este prato.", status=403)
+
+    data = request.get_json(silent=True)
+    if not check_json(data):
+        return err_json("INVALID_JSON", "Envie os dados em formato JSON válido.", status=400)
+    disponivel = data.get("disponivel")
+    if not isinstance(disponivel, bool):
+        return err_json("VALIDATION_FAILED", "Informe 'disponivel' como verdadeiro ou falso.", status=400)
+
+    try:
+        CRUD.update.prato(id, {"disponivel": disponivel})
+    except SQLAlchemyError:
+        db.session.rollback()
+        logger.exception("Falha ao alterar disponibilidade do prato %s.", id)
+        return err_json("DATABASE_ERROR", "Não foi possível alterar a disponibilidade.", status=500)
+    return jsonify({"success": True, "prato": _prato_json(CRUD.read.prato(id))})
+
+
 @cardapio_bp.delete("/pratos/<int:id>")
 @validar
 @permission((cook, admin))
@@ -373,7 +442,11 @@ def _imagem_do_corpo():
     key = data.get("imagem")
     if not isinstance(key, str) or not key.strip():
         return None, err_json("VALIDATION_FAILED", "Informe a imagem (chave do upload).", status=400)
-    return key.strip(), None
+    key = key.strip()
+    # API-002: a chave precisa existir neste armazenamento (não aceitar referência arbitrária).
+    if not storage.key_exists(key):
+        return None, err_json("VALIDATION_FAILED", "Imagem inválida ou inexistente.", status=400)
+    return key, None
 
 
 @cardapio_bp.patch("/restaurantes/<int:id>/imagem")

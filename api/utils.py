@@ -75,12 +75,13 @@ def sendEmailAsync(app, Subject, recipient, content, HTMLcontent):
 
 
 def sendAuthEmail(recipient:str):
-    """Dispara, em segundo plano, o email de autenticação da conta ao usuário.
+    """Enfileira (outbox durável) o email de autenticação da conta ao usuário.
 
-    O link/token é gerado na requisição (precisa de current_app); o envio SMTP
-    roda em uma thread para que lentidão ou falha do servidor de email nunca
-    quebre o cadastro (o usuário pode revalidar o email depois).
+    MAIL-001: em vez de uma daemon thread (que morre quando a função serverless
+    congela), o email é gravado na outbox e enviado pelo drenador. O link/token é
+    gerado aqui (precisa de current_app).
     """
+    from models.email_service import enqueue_email, process_outbox
 
     token = generateToken(recipient,"user validation",15)
     verificationLink = (
@@ -95,11 +96,12 @@ def sendAuthEmail(recipient:str):
         <p>{{link}}</p>
     ''', link=verificationLink)
 
-    Thread(
-        target=sendEmailAsync,
-        args=(current_app._get_current_object(), subject, recipient, content, htmlContent),
-        daemon=True,
-    ).start()
+    enqueue_email(recipient, subject, content, htmlContent)
+    # Drena best-effort agora; se falhar/expirar, o cron/CLI reprocessa (idempotente).
+    try:
+        process_outbox()
+    except Exception:
+        logger.exception("Falha ao drenar a outbox após enfileirar email de validação.")
 
 
 

@@ -42,10 +42,13 @@ __pycache__/
 *.sln
 *.sw*
 
-# IA coisas
+# those who know 💀
 .codex
 .aws
 .agents
+.kiro
+prompt/
+scripts/
 
 # Playwright
 /test-results/

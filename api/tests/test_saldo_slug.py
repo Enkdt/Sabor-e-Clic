@@ -75,9 +75,16 @@ class SaldoSlugTests(unittest.TestCase):
         self.assertEqual(r.get_json()["prato"]["slug"], "pizza-margherita")
 
     def test_review_includes_author_name(self):
-        # Cria e paga um pedido, confirma item e avalia; a avaliação pública traz o nome.
+        # Cria e paga um pedido, entrega o item e avalia; a avaliação pública traz o nome.
         pid = self.client.post("/api/pedidos", json={"itens": [{"id_prato": self.prato_id, "quantidade": 1}]}).get_json()["pedido"]["id"]
         self.client.post(f"/api/pedidos/{pid}/pagamento", json={"metodo": "entrega"})
+        # SEC-005: o item precisa estar entregue para poder ser avaliado.
+        from datetime import datetime, timezone, timedelta as _td
+        with self.app.app_context():
+            CRUD.update.pedido_prato(
+                (pid, self.prato_id),
+                {"status": "confirmado", "confirmado_em": datetime.now(timezone.utc) - _td(hours=1)},
+            )
         self.client.post(f"/api/pedidos/{pid}/avaliacao", json={"id_prato": self.prato_id, "nota": 5, "comentario": "Ótimo"})
         pub = self.client.get(f"/api/pratos/{self.prato_id}/avaliacoes")
         self.assertEqual(pub.status_code, 200, pub.get_json())

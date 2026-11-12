@@ -8,6 +8,7 @@ from decimal import Decimal
 
 from app import create_app
 from models.crud import CRUD
+from datetime import datetime, timedelta, timezone
 
 logging.disable(logging.CRITICAL)
 
@@ -47,12 +48,23 @@ class AvaliacaoTests(unittest.TestCase):
     def _login(self, email):
         self.client.post("/api/login", json={"email": email, "password": PASSWORD})
 
-    def _novo_pedido(self, pay=True):
+    def _novo_pedido(self, pay=True, deliver=True):
         created = self.client.post("/api/pedidos", json={"itens": [{"id_prato": self.prato_id, "quantidade": 1}]})
         pid = created.get_json()["pedido"]["id"]
         if pay:
             self.client.post(f"/api/pedidos/{pid}/pagamento", json={"metodo": "entrega"})
+        if deliver:
+            self._entregar_item(pid, self.prato_id)
         return pid
+
+    def _entregar_item(self, pid, id_prato):
+        # SEC-005: marca o item como confirmado no passado para que o status
+        # efetivo derive para 'entregue' (tempo decorrido >= ENTREGA_SEGUNDOS).
+        with self.app.app_context():
+            CRUD.update.pedido_prato(
+                (pid, id_prato),
+                {"status": "confirmado", "confirmado_em": datetime.now(timezone.utc) - timedelta(hours=1)},
+            )
 
     def test_review_paid_order(self):
         self._login("ana@example.com")
@@ -69,9 +81,17 @@ class AvaliacaoTests(unittest.TestCase):
 
     def test_cannot_review_unpaid_order(self):
         self._login("ana@example.com")
-        pid = self._novo_pedido(pay=False)
+        pid = self._novo_pedido(pay=False, deliver=False)
         response = self.client.post(f"/api/pedidos/{pid}/avaliacao", json={"id_prato": self.prato_id, "nota": 4})
         self.assertEqual(response.status_code, 409, response.get_json())
+
+    def test_cannot_review_item_before_delivery(self):
+        # SEC-005: pedido pago, mas o item ainda não foi entregue -> 409.
+        self._login("ana@example.com")
+        pid = self._novo_pedido(pay=True, deliver=False)
+        response = self.client.post(f"/api/pedidos/{pid}/avaliacao", json={"id_prato": self.prato_id, "nota": 5})
+        self.assertEqual(response.status_code, 409, response.get_json())
+        self.assertEqual(response.get_json()["error"]["code"], "NOT_ELIGIBLE")
 
     def test_duplicate_review_rejected(self):
         self._login("ana@example.com")

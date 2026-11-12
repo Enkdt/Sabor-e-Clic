@@ -5,7 +5,6 @@ import validations as val
 import logging
 import hashlib
 import secrets
-from threading import Thread
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -25,7 +24,23 @@ logger = logging.getLogger(__name__)
 auth_bp = Blueprint("auth",__name__,url_prefix="/api")
 
 
+def _email_rate_key():
+    """Chave de rate limit por email do corpo da requisição (SEC-003).
+
+    Complementa o limite por IP: evita abuso de reset/reenvio mirando uma conta
+    específica mesmo quando o atacante troca de IP. Cai para o IP remoto quando o
+    email não está presente/é inválido.
+    """
+    data = request.get_json(silent=True) or {}
+    email = data.get("email")
+    if isinstance(email, str) and email.strip():
+        return f"email:{email.strip().lower()}"
+    from flask_limiter.util import get_remote_address
+    return get_remote_address()
+
+
 def _send_password_reset_email(app, recipient, raw_token):
+    # Mantido por compatibilidade; o fluxo agora usa a outbox durável (MAIL-001).
     with app.app_context():
         link = f"{app.config['FRONTEND_BASE_URL'].rstrip('/')}/redefinir-senha?token={raw_token}"
         try:
@@ -319,6 +334,7 @@ def validar_cadastro():
 
 @auth_bp.post('/cadastro/reenviar-validacao')
 @limiter.limit("3 per hour")
+@limiter.limit("3 per hour", key_func=_email_rate_key)
 def reenviar_validacao():
     data = request.get_json(silent=True)
     if not val.check_json(data):
@@ -358,6 +374,7 @@ def reenviar_validacao():
 
 @auth_bp.post('/password-reset/request')
 @limiter.limit("3 per hour")
+@limiter.limit("3 per hour", key_func=_email_rate_key)
 def request_password_reset():
     data = request.get_json(silent=True)
     if not val.check_json(data):
@@ -372,24 +389,34 @@ def request_password_reset():
     token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
     user = CRUD.read.usuario_por_email(email)
     if user is not None:
+        from models.email_service import enqueue_email, process_outbox
         token = PasswordResetToken(
             user_id=user.id,
             token_hash=token_hash,
             expires_at=datetime.now(timezone.utc) + timedelta(minutes=current_app.config["PASSWORD_RESET_TOKEN_MINUTES"]),
         )
+        link = f"{current_app.config['FRONTEND_BASE_URL'].rstrip('/')}/redefinir-senha?token={raw_token}"
         db.session.add(token)
         try:
+            # MAIL-001: token e e-mail são gravados na MESMA transação (outbox durável);
+            # nada de daemon thread que morre quando a função congela.
+            enqueue_email(
+                user.email,
+                "Redefinição de senha - Sabor & Clic",
+                f"Use este link para definir uma nova senha: {link}",
+                f'<p><a href="{link}">Definir nova senha</a></p>',
+                commit=False,
+            )
             db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
             logger.exception("Falha ao processar solicitação de redefinição de senha")
         else:
-            logger.info("Solicitação de redefinição aceita; envio de e-mail iniciado.")
-            Thread(
-                target=_send_password_reset_email,
-                args=(current_app._get_current_object(), user.email, raw_token),
-                daemon=True,
-            ).start()
+            logger.info("Solicitação de redefinição aceita; e-mail enfileirado na outbox.")
+            try:
+                process_outbox()
+            except Exception:
+                logger.exception("Falha ao drenar a outbox após solicitação de redefinição.")
     return jsonify({"success": True, "message": "Se o email estiver cadastrado, enviaremos instruções para redefinir a senha."}), 200
 
 

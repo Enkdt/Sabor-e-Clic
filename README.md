@@ -23,7 +23,8 @@
 </div>
 
 <p align="center"> 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Sabor & Clic é um projeto baseado nas dark kitchens que reúne microempreededores, redes de delivery e outros focados em culinária vegana.
+O fim deste projeto é facilitar e melhorar a experiência de gerência para os cozinheiros a se encontrarem com o seu devido cliente.
 </p>
 
 ---
@@ -39,7 +40,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 <p align="center">
   <img src="https://skillicons.dev/icons?i=py,flask,html" alt="https://skillicons.dev"/><br>
   <img src="https://skillicons.dev/icons?i=css,javascript,react" alt="https://skillicons.dev"/><br>
-  <img src="https://skillicons.dev/icons?i=figma,mysql" alt="https://skillicons.dev"/>
+  <img src="https://skillicons.dev/icons?i=figma,mysql,github" alt="https://skillicons.dev"/>
 
 </p>
 

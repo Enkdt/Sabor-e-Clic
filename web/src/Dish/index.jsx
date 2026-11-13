@@ -47,11 +47,11 @@ export const Dish=()=>{
     }, [dish])
 
     if(status === 'loading'){
-        return <main className='dishPage'><Header/><p>Carregando prato…</p></main>
+        return <main id='conteudo-principal' className='dishPage'><Header/><p>Carregando prato…</p></main>
     }
     if(status === 'error' || !dish){
         return(
-            <main className='dishPage'>
+            <main id='conteudo-principal' className='dishPage'>
                 <Header/>
                 <h1>Prato não encontrado :/</h1>
                 <Link to='/'>Voltar para o início</Link>
@@ -60,7 +60,7 @@ export const Dish=()=>{
     }
 
     return(
-        <main className='dishPage'>
+        <main id='conteudo-principal' className='dishPage'>
             <Header/>
             {/*Imagem do prato (gradiente placeholder quando ausente)*/}
             <section className='dishPageImg h-[200px] md:h-[320px]' style={dish.imagem ? { backgroundImage: `url(${dish.imagem})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}></section>

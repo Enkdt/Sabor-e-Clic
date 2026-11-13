@@ -68,7 +68,7 @@ export const Dashboard=()=>{
     const revenueChart=data && buildChart('Receita por restaurante','Faturamento de pedidos pagos','', data.receita_por_restaurante, (v)=>formatCurrency(v))
 
     return(
-        <main className='dashboardPage'>
+        <main id='conteudo-principal' className='dashboardPage'>
             <Header/>
             <div className='dashboardContent max-w-[1180px] mx-auto px-4'>
                 <div className='dashboardTop flex flex-col gap-4 md:flex-row md:items-end md:justify-between'>

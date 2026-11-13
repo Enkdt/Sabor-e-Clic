@@ -88,7 +88,7 @@ export const KitchenDishes=()=>{
 
     if(!restaurantes.length){
         return(
-            <main className='kitchenDishesPage'>
+            <main id='conteudo-principal' className='kitchenDishesPage'>
                 <Header/>
                 <div className='kitchenDishesContent'>
                     <h1>Meus pratos</h1>
@@ -99,7 +99,7 @@ export const KitchenDishes=()=>{
     }
 
     return(
-        <main className='kitchenDishesPage'>
+        <main id='conteudo-principal' className='kitchenDishesPage'>
             <Header/>
             <div className='kitchenDishesContent'>
                 <h1>Meus pratos</h1>

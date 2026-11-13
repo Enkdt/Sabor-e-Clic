@@ -1,5 +1,3 @@
-- [X] Oauth
-
 - [X] Verificar funcionamento bancadas
 
 - [X] Verificar funcionamento restaurantes

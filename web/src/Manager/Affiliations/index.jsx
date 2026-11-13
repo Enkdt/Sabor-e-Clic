@@ -41,7 +41,7 @@ export const Affiliations=()=>{
     }
 
     return(
-        <main className='affPage'>
+        <main id='conteudo-principal' className='affPage'>
             <Header/>
             <div className='affContent'>
                 <h1>Filiação de cozinheiros</h1>

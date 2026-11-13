@@ -1,0 +1,23 @@
+/* Link "pular para o conteúdo" — acessibilidade (baixa visão / navegação por teclado).
+   Fica fora da tela até receber foco (Tab); ao focar, aparece no topo. */
+.skipLink{
+    position: absolute;
+    left: 8px;
+    top: -48px; /* escondido acima da viewport */
+    z-index: 1000;
+    padding: 10px 16px;
+    background-color: var(--brand-color);
+    color: #1b1b1b;
+    font-weight: 700;
+    font-size: 16px;
+    border-radius: 0 0 8px 8px;
+    text-decoration: none;
+    transition: top 0.15s ease;
+}
+
+.skipLink:focus,
+.skipLink:focus-visible{
+    top: 0; /* traz à vista quando focado via teclado */
+    outline: 3px solid var(--text-color);
+    outline-offset: 2px;
+}

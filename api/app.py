@@ -1,11 +1,14 @@
 # Arquivo de inicialização e configuração do Flask.
 
 import logging
+import json
 import os
 import re
 import sys
 import uuid
-from time import perf_counter
+from time import perf_counter, time
+from urllib import error as _urllib_error
+from urllib import request as _urllib_request
 from urllib.parse import urlsplit
 
 # Garante que o diretório desta aplicação (api/) esteja em sys.path antes de
@@ -52,6 +55,11 @@ _SENSITIVE_HINTS = ("password", "senha", "token", "secret", "cookie", "authoriza
 _CONN_STRING_RE = re.compile(r"(\b[a-zA-Z][a-zA-Z0-9+.-]*)://[^\s/'\"]+:[^\s/'\"]+@[^\s'\"]+")
 
 
+def _redact(message: str) -> str:
+    """Redação best-effort de connection strings com credenciais embutidas."""
+    return _CONN_STRING_RE.sub(r"\1://[redacted]", message)
+
+
 class _RedactingFormatter(logging.Formatter):
     """Formatter de linha única para stdout.
 
@@ -63,8 +71,107 @@ class _RedactingFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         message = super().format(record)
         # Redação best-effort de connection strings (ex.: postgresql://user:pass@host).
-        message = _CONN_STRING_RE.sub(r"\1://[redacted]", message)
-        return message
+        return _redact(message)
+
+
+class UpstashLogHandler(logging.Handler):
+    """Envia cada log para uma lista no Redis via Upstash REST (OBS-001).
+
+    Desenho intencional para serverless:
+      - Best-effort: nunca propaga exceções (usa handleError). Se o Redis
+        estiver fora ou lento, a requisição não é afetada.
+      - Sem workers de longa duração: a escrita é uma única chamada HTTP
+        síncrona com timeout curto. O stdout continua sendo o log primário.
+      - LPUSH + LTRIM em pipeline, para a lista não crescer sem limite.
+      - Reaproveita a redação de segredos do formatter.
+
+    Não armazena o token no log; só o usa no cabeçalho Authorization.
+    """
+
+    def __init__(self, base_url: str, token: str, *, key: str,
+                 max_entries: int, timeout: float):
+        super().__init__()
+        # Normaliza para evitar barra dupla ao montar o endpoint do pipeline.
+        self._base_url = base_url.rstrip("/")
+        self._token = token
+        self._key = key
+        self._max_entries = max_entries
+        self._timeout = timeout
+        # Evita inundar o stderr quando o Redis está mal configurado/indisponível:
+        # só avisa uma vez por janela. Ajuda a DIAGNOSTICAR por que "nada chega".
+        self._last_warn_at = 0.0
+
+    def _warn_once(self, detail: str) -> None:
+        """Avisa no stderr (fora do logging, para não recorrer ao próprio handler)
+        no máximo uma vez a cada 60s. Torna uma falha silenciosa observável."""
+        now = time()
+        if now - self._last_warn_at < 60:
+            return
+        self._last_warn_at = now
+        try:
+            print(f"[UpstashLogHandler] falha ao enviar log ao Redis: {detail}",
+                  file=sys.stderr, flush=True)
+        except Exception:
+            pass
+
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            payload = json.dumps({
+                "ts": record.created,
+                "level": record.levelname,
+                "logger": record.name,
+                "message": _redact(self.format(record)),
+            }, ensure_ascii=False)
+            # Pipeline REST: LPUSH <key> <payload> ; LTRIM <key> 0 max-1.
+            commands = [
+                ["LPUSH", self._key, payload],
+                ["LTRIM", self._key, "0", str(self._max_entries - 1)],
+            ]
+            body = json.dumps(commands).encode("utf-8")
+            req = _urllib_request.Request(
+                f"{self._base_url}/pipeline",
+                data=body,
+                method="POST",
+                headers={
+                    "Authorization": f"Bearer {self._token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            # Timeout curto: nunca segurar a resposta por causa de telemetria.
+            with _urllib_request.urlopen(req, timeout=self._timeout) as resp:
+                # Valida a resposta: o Upstash responde 200 com um array JSON, mas
+                # pode conter {"error": ...} por comando SEM status HTTP de erro.
+                # Sem checar isso, uma config errada (token/URL) falharia em silêncio
+                # e "nenhum log chegaria" sem qualquer pista — a causa deste bug.
+                raw = resp.read().decode("utf-8", "replace")
+                self._check_pipeline_response(resp.status, raw)
+        except _urllib_error.HTTPError as http_err:
+            # 401 (token inválido), 400 (sintaxe), etc. Agora é visível no stderr.
+            detail = f"HTTP {http_err.code}"
+            try:
+                detail += f" {http_err.read().decode('utf-8', 'replace')[:200]}"
+            except Exception:
+                pass
+            self._warn_once(detail)
+            self.handleError(record)
+        except Exception as err:
+            # Best-effort: falha de telemetria nunca derruba o request, mas avisa.
+            self._warn_once(repr(err))
+            self.handleError(record)
+
+    def _check_pipeline_response(self, status: int, raw: str) -> None:
+        """Levanta se a resposta do pipeline indicar falha (status != 200 ou
+        qualquer item com 'error'). Chamado dentro do try de emit."""
+        if status != 200:
+            raise RuntimeError(f"status inesperado {status}: {raw[:200]}")
+        try:
+            parsed = json.loads(raw)
+        except ValueError:
+            raise RuntimeError(f"resposta não-JSON: {raw[:200]}")
+        itens = parsed if isinstance(parsed, list) else [parsed]
+        for item in itens:
+            if isinstance(item, dict) and item.get("error"):
+                raise RuntimeError(f"erro do Redis: {item['error']}")
 
 
 def _configure_logging(app: Flask) -> None:
@@ -75,6 +182,8 @@ def _configure_logging(app: Flask) -> None:
     """
     root_logger = logging.getLogger()
     if any(getattr(h, "name", None) == "sabor-stream" for h in root_logger.handlers):
+        # Stream já configurado; ainda assim garante o handler de Redis (idempotente).
+        _configure_redis_logging(app, root_logger)
         return
     handler = logging.StreamHandler(sys.stdout)
     handler.set_name("sabor-stream")
@@ -84,6 +193,35 @@ def _configure_logging(app: Flask) -> None:
     root_logger.addHandler(handler)
     level = logging.DEBUG if app.config.get("DEBUG") else logging.INFO
     root_logger.setLevel(level)
+
+    _configure_redis_logging(app, root_logger)
+
+
+def _configure_redis_logging(app: Flask, root_logger: logging.Logger) -> None:
+    """Anexa um UpstashLogHandler quando as credenciais REST estão presentes.
+
+    Fail-safe: sem URL/token, mantém apenas stdout. Idempotente (não duplica
+    handlers em cold starts). O stdout permanece como log primário.
+    """
+    base_url = app.config.get("UPSTASH_REDIS_REST_URL")
+    token = app.config.get("UPSTASH_REDIS_REST_TOKEN")
+    if not base_url or not token:
+        return
+    if any(getattr(h, "name", None) == "sabor-redis" for h in root_logger.handlers):
+        return
+    redis_handler = UpstashLogHandler(
+        base_url,
+        token,
+        key=app.config.get("LOG_REDIS_KEY", "logs:app"),
+        max_entries=app.config.get("LOG_REDIS_MAX_ENTRIES", 5000),
+        timeout=app.config.get("LOG_REDIS_TIMEOUT", 1.5),
+    )
+    redis_handler.set_name("sabor-redis")
+    redis_handler.setFormatter(_RedactingFormatter("%(message)s"))
+    # Loga a ativação ANTES de anexar, para não forçar esta linha pelo próprio
+    # handler recém-criado (evita uma chamada de rede imediata no boot).
+    logger.info("Logs também serão enviados ao Redis (Upstash REST).")
+    root_logger.addHandler(redis_handler)
 
 
 def _validate_production_config(app: Flask) -> None:

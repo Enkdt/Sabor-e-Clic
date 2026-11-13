@@ -4,169 +4,149 @@ from decimal import Decimal
 from app import app
 from models.crud import CRUD
 from utils import slugify
-
-import secrets
-import subprocess
-from pathlib import Path
+import placeholders
 
 DEMO_PASSWORD = "SaborDemo123!"
 
-_UPLOAD_DIR = Path(__file__).resolve().parent / "uploads"
 # Paleta por índice para variar as fotos de demonstração.
 _CORES = ["#426700", "#9a5b00", "#7a1f4b", "#1f5a7a", "#8a6d00", "#6a1f7a", "#2f7a3f"]
 
 
 def _placeholder_image(texto, cor):
-    """Gera uma imagem PNG de placeholder (gradiente + rótulo) e devolve a chave salva em uploads/.
+    """Gera uma imagem rotulada em uploads/ (via ImageMagick) para a demo.
 
-    shortcut: imagem gerada localmente para a demo; em produção os cozinheiros/admin sobem fotos reais.
+    Delega para o módulo compartilhado `placeholders`. Devolve a chave ou None
+    quando o `magick` não está disponível (ex.: Vercel/CI) — nesse caso o app
+    serve o placeholder padrão estático automaticamente na serialização.
     """
-    _UPLOAD_DIR.mkdir(exist_ok=True)
-    key = f"seed_{secrets.token_hex(8)}.png"
-    destino = _UPLOAD_DIR / key
-    rotulo = (texto[:22]).replace(":", " ")
-    try:
-        subprocess.run(
-            [
-                "magick", "-size", "600x400",
-                f"gradient:{cor}-#1b1b1b",
-                "-gravity", "center",
-                "-pointsize", "34", "-fill", "white",
-                "-annotate", "0", rotulo,
-                str(destino),
-            ],
-            check=True, capture_output=True, timeout=30,
-        )
-    except (subprocess.SubprocessError, FileNotFoundError):
-        return None
-    return key
+    return placeholders.generate_labeled_placeholder(texto, cor)
 
 RESTAURANTS = [
     {
-        "nome": "Cozinha Demo",
+        "nome": "Raiz Vegana",
         "categoria": "Brasileira",
-        "cardapio": "Almoço executivo",
-        "nome_prato": "Prato feito brasileiro",
+        "cardapio": "Almoço plant-based",
+        "nome_prato": "Prato feito de feijoada vegana",
         "preco": Decimal("32.00"),
         "quantidade": 20,
         "endereco": {
             "rua": "Rua das Flores",
             "numero": "120",
-            "complemento": "Loja 1",
+            "complemento": "Dark kitchen 1",
             "bairro": "Centro",
             "cidade": "São Paulo",
             "estado": "SP",
         },
-        "ingredientes": [("Arroz", "KG", "0.18"), ("Feijão", "KG", "0.12"), ("Carne bovina", "KG", "0.20")],
-        "extras": [("Feijoada completa", Decimal("36.00")), ("Strogonoff de frango", Decimal("30.00"))],
+        "ingredientes": [("Arroz integral", "KG", "0.18"), ("Feijão preto", "KG", "0.14"), ("Cogumelo paris", "KG", "0.12")],
+        "extras": [("Feijoada vegana completa", Decimal("36.00")), ("Strogonoff de cogumelos", Decimal("30.00"))],
     },
     {
-        "nome": "Padaria Demo",
+        "nome": "Pão & Grão Vegano",
         "categoria": "Padaria",
-        "cardapio": "Pães e cafés",
-        "nome_prato": "Pão na chapa com café",
+        "cardapio": "Pães e cafés veganos",
+        "nome_prato": "Pão na chapa com café vegetal",
         "preco": Decimal("9.50"),
         "quantidade": 20,
         "endereco": {
             "rua": "Rua do Comércio",
             "numero": "45",
-            "complemento": "Loja 2",
+            "complemento": "Dark kitchen 2",
             "bairro": "Centro",
             "cidade": "Campinas",
             "estado": "SP",
         },
-        "ingredientes": [("Farinha de trigo", "KG", "0.25"), ("Leite", "L", "0.20"), ("Ovo", "UN", "2.00")],
-        "extras": [("Croissant de presunto e queijo", Decimal("12.00")), ("Bolo de cenoura com chocolate", Decimal("8.00"))],
+        "ingredientes": [("Farinha de trigo", "KG", "0.25"), ("Leite de aveia", "L", "0.20"), ("Margarina vegetal", "KG", "0.05")],
+        "extras": [("Croissant de tofu defumado", Decimal("12.00")), ("Bolo de cenoura com cobertura de cacau", Decimal("8.00"))],
     },
     {
-        "nome": "Cantina Italiana Demo",
+        "nome": "Cantina Verde",
         "categoria": "Italiana",
-        "cardapio": "Massas artesanais",
+        "cardapio": "Massas artesanais veganas",
         "nome_prato": "Fettuccine ao molho sugo",
         "preco": Decimal("38.00"),
         "quantidade": 15,
         "endereco": {
             "rua": "Rua Itália",
             "numero": "80",
-            "complemento": "Salão principal",
+            "complemento": "Dark kitchen 3",
             "bairro": "Jardim Europa",
             "cidade": "São Paulo",
             "estado": "SP",
         },
-        "ingredientes": [("Farinha de trigo", "KG", "0.18"), ("Molho de tomate", "KG", "0.12"), ("Queijo", "KG", "0.08")],
-        "extras": [("Lasanha à bolonhesa", Decimal("42.00")), ("Nhoque ao pesto", Decimal("35.00"))],
+        "ingredientes": [("Farinha de sêmola", "KG", "0.18"), ("Molho de tomate", "KG", "0.14"), ("Queijo vegetal de castanha", "KG", "0.08")],
+        "extras": [("Lasanha de berinjela", Decimal("42.00")), ("Nhoque ao pesto de manjericão", Decimal("35.00"))],
     },
     {
-        "nome": "Japastel Demo",
+        "nome": "Oriente Vegano",
         "categoria": "Japonesa",
-        "cardapio": "Combinados orientais",
-        "nome_prato": "Combo sushi especial",
+        "cardapio": "Combinados orientais veganos",
+        "nome_prato": "Combo sushi vegano especial",
         "preco": Decimal("45.00"),
         "quantidade": 20,
         "endereco": {
             "rua": "Rua Japão",
             "numero": "210",
-            "complemento": "Loja 3",
+            "complemento": "Dark kitchen 4",
             "bairro": "Liberdade",
             "cidade": "São Paulo",
             "estado": "SP",
         },
-        "ingredientes": [("Arroz japonês", "KG", "0.18"), ("Salmão", "KG", "0.12"), ("Alga nori", "UN", "2.00")],
-        "extras": [("Temaki de salmão", Decimal("28.00")), ("Yakisoba de carne", Decimal("33.00"))],
+        "ingredientes": [("Arroz japonês", "KG", "0.18"), ("Pepino", "KG", "0.10"), ("Alga nori", "UN", "2.00")],
+        "extras": [("Temaki de legumes", Decimal("28.00")), ("Yakisoba de tofu e shiitake", Decimal("33.00"))],
     },
     {
-        "nome": "Taco Demo",
+        "nome": "Taco Verde",
         "categoria": "Mexicana",
-        "cardapio": "Tacos e burritos",
-        "nome_prato": "Burrito mexicano",
+        "cardapio": "Tacos e burritos veganos",
+        "nome_prato": "Burrito vegano",
         "preco": Decimal("27.00"),
         "quantidade": 25,
         "endereco": {
             "rua": "Rua México",
             "numero": "55",
-            "complemento": "Loja 4",
+            "complemento": "Dark kitchen 5",
             "bairro": "Centro",
             "cidade": "Santos",
             "estado": "SP",
         },
-        "ingredientes": [("Tortilha", "UN", "2.00"), ("Feijão", "KG", "0.08"), ("Carne moída", "KG", "0.12")],
-        "extras": [("Taco de carne", Decimal("22.00")), ("Nachos com guacamole", Decimal("25.00"))],
+        "ingredientes": [("Tortilha de milho", "UN", "2.00"), ("Feijão carioca", "KG", "0.10"), ("Proteína de soja", "KG", "0.12")],
+        "extras": [("Taco de jaca desfiada", Decimal("22.00")), ("Nachos com guacamole", Decimal("25.00"))],
     },
     {
-        "nome": "Garden Demo",
-        "categoria": "Vegetariana",
-        "cardapio": "Pratos naturais",
+        "nome": "Jardim Natural",
+        "categoria": "Saudável",
+        "cardapio": "Pratos naturais veganos",
         "nome_prato": "Bowl de quinoa e legumes",
         "preco": Decimal("29.00"),
         "quantidade": 15,
         "endereco": {
             "rua": "Rua das Palmeiras",
             "numero": "300",
-            "complemento": "Loja 5",
+            "complemento": "Dark kitchen 6",
             "bairro": "Vila Verde",
             "cidade": "Campinas",
             "estado": "SP",
         },
         "ingredientes": [("Lentilha", "KG", "0.15"), ("Legumes variados", "KG", "0.18"), ("Quinoa", "KG", "0.10")],
-        "extras": [("Wrap vegano de grão-de-bico", Decimal("26.00")), ("Salada caesar vegetariana", Decimal("24.00"))],
+        "extras": [("Wrap vegano de grão-de-bico", Decimal("26.00")), ("Salada caesar vegana", Decimal("24.00"))],
     },
     {
-        "nome": "Burger Demo",
+        "nome": "Planta Burger",
         "categoria": "Hamburgueria",
-        "cardapio": "Hambúrgueres especiais",
-        "nome_prato": "Burger especial da casa",
+        "cardapio": "Hambúrgueres vegetais",
+        "nome_prato": "Burger vegetal da casa",
         "preco": Decimal("34.90"),
         "quantidade": 20,
         "endereco": {
             "rua": "Avenida Central",
             "numero": "500",
-            "complemento": "Loja 6",
+            "complemento": "Dark kitchen 7",
             "bairro": "Jardins",
             "cidade": "São Paulo",
             "estado": "SP",
         },
-        "ingredientes": [("Pão brioche", "UN", "1.00"), ("Carne bovina", "KG", "0.18"), ("Queijo", "KG", "0.03")],
-        "extras": [("Cheeseburger duplo", Decimal("39.90")), ("Batata frita com cheddar e bacon", Decimal("22.00"))],
+        "ingredientes": [("Pão brioche vegano", "UN", "1.00"), ("Hambúrguer de grão-de-bico", "UN", "1.00"), ("Queijo vegetal", "KG", "0.03")],
+        "extras": [("Duplo burger de feijão preto", Decimal("39.90")), ("Batata frita com cheddar vegetal", Decimal("22.00"))],
     },
 ]
 
@@ -229,7 +209,7 @@ COOKS = [
     {
         "nome": "Marcos Nunes Demo",
         "email": "marcos.nunes@sabor.test",
-        "especialidade": "Hambúrgueres e grelhados",
+        "especialidade": "Hambúrgueres vegetais",
         "inicio": time(14, 0),
         "fim": time(22, 0),
         "periodo": "noturno",
@@ -239,7 +219,7 @@ COOKS = [
 ORDERS = [
     {
         "customer": "ana.demo@sabor.test",
-        "restaurant": "Cozinha Demo",
+        "restaurant": "Raiz Vegana",
         "cook": "rafael.cozinha@sabor.test",
         "data": date(2026, 10, 29),
         "quantidade": 2,
@@ -249,7 +229,7 @@ ORDERS = [
     },
     {
         "customer": "bruno.demo@sabor.test",
-        "restaurant": "Japastel Demo",
+        "restaurant": "Oriente Vegano",
         "cook": "julia.ferraz@sabor.test",
         "data": date(2026, 10, 30),
         "quantidade": 1,
@@ -258,7 +238,7 @@ ORDERS = [
     },
     {
         "customer": "carla.demo@sabor.test",
-        "restaurant": "Burger Demo",
+        "restaurant": "Planta Burger",
         "cook": "marcos.nunes@sabor.test",
         "data": date(2026, 10, 31),
         "quantidade": 2,

@@ -72,7 +72,7 @@ export const LoginForm=()=>{
     ]
 
 return (
-    <div className="loginDiv">
+    <div id="conteudo-principal" className="loginDiv">
         <LoginImg/>
 
         <div className="loginForm w-full max-w-[800px]">

@@ -66,11 +66,11 @@ export const StockAdd=()=>{
     }
 
     if(status==='loading'){
-        return <main className='stockAddPage'><Header/><p role='status' className='px-4 py-8'>Carregando item…</p></main>
+        return <main id='conteudo-principal' className='stockAddPage'><Header/><p role='status' className='px-4 py-8'>Carregando item…</p></main>
     }
 
     return(
-        <main className='stockAddPage'>
+        <main id='conteudo-principal' className='stockAddPage'>
             <Header/>
             <div className='stockAddForm px-4 py-8 md:px-10 lg:px-[88px]'>
                 <h1 className='text-[28px] md:text-[36px]'>{isEdit ? 'Editar item do estoque' : 'Adição de itens ao estoque'}</h1>

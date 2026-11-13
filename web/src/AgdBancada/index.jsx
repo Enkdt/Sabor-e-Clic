@@ -21,7 +21,7 @@ export const AgdBancada=()=>{
     }, [])
 
     return (
-        <main className='agdBancadaPage'>
+        <main id='conteudo-principal' className='agdBancadaPage'>
             <Header/>
             <div className='agdBancadaContent'>
                 <p className='agdBancadaEyebrow'>Para donos de restaurante e microempreendedores</p>

@@ -1,5 +1,5 @@
 # Arquivo das rotas de autenticação.
-# TODO: Adicionar recuperação de conta por e-mail, login OAuth do Google e autenticação multifator.
+# TODO: Adicionar recuperação de conta por e-mail e autenticação multifator.
 # Antes da produção, garantir que o CEP seja informado ao criar uma conta.
 import validations as val
 import logging

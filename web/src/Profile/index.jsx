@@ -47,20 +47,26 @@ export const Profile=()=>{
 
     const recarregar=async ()=>{
         if(recarregando) return
+        // Valida no cliente: inteiro positivo (sem centavos), dentro da faixa.
+        const valor=Number(recarga)
+        if(!Number.isInteger(valor) || valor<=0){
+            setRecargaMsg({ tipo:'erro', texto:'Informe um valor inteiro positivo (sem centavos).' })
+            return
+        }
         setRecarregando(true)
         setRecargaMsg(null)
         try{
-            const novo=await addBalance(Number(recarga))
+            const novo=await addBalance(valor)
             setSaldo(novo)
             setSaldoErro(false)
             setRecargaMsg({ tipo:'ok', texto:`Saldo atualizado para ${formatCurrency(Number(novo))}.` })
         }
-        catch{ setRecargaMsg({ tipo:'erro', texto:'Não foi possível adicionar saldo. Tente novamente.' }) }
+        catch(err){ setRecargaMsg({ tipo:'erro', texto: err.message || 'Não foi possível adicionar saldo. Tente novamente.' }) }
         finally{ setRecarregando(false) }
     }
 
     return(
-        <main className='profilePage'>
+        <main id='conteudo-principal' className='profilePage'>
             <Header/>
             <section className='profileHero h-[120px] md:h-[160px]'></section>
 
@@ -91,9 +97,16 @@ export const Profile=()=>{
                                 <p className='profileStatValue'>{formatCurrency(Number(saldo))}</p>
                                 <p className='profileStatLabel'>Saldo disponível</p>
                                 <div className='profileRecarga'>
-                                    <select value={recarga} onChange={(e)=>setRecarga(e.target.value)} aria-label='Valor da recarga'>
-                                        {['20','50','100','200'].map((v)=>(<option key={v} value={v}>R$ {v}</option>))}
-                                    </select>
+                                    <input
+                                        type='number'
+                                        min='1'
+                                        max='1000'
+                                        step='1'
+                                        value={recarga}
+                                        onChange={(e)=>setRecarga(e.target.value)}
+                                        aria-label='Valor da recarga (inteiro, em reais)'
+                                        placeholder='Valor em R$'
+                                    />
                                     <button type='button' onClick={recarregar} disabled={recarregando}>{recarregando ? 'Adicionando…' : 'Adicionar saldo'}</button>
                                 </div>
                                 {recargaMsg && (

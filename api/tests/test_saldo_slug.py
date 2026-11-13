@@ -51,12 +51,22 @@ class SaldoSlugTests(unittest.TestCase):
     def test_add_balance(self):
         r = self.client.post("/api/perfil/saldo", json={"valor": 50})
         self.assertEqual(r.status_code, 200, r.get_json())
-        self.assertEqual(r.get_json()["saldo"], "250.00")  # 200 inicial + 50
+        # Saldo é tratado como inteiro (sem centavos): 200 inicial + 50.
+        self.assertEqual(r.get_json()["saldo"], "250")
 
     def test_add_balance_rejects_out_of_range(self):
         self.assertEqual(self.client.post("/api/perfil/saldo", json={"valor": 0}).status_code, 400)
         self.assertEqual(self.client.post("/api/perfil/saldo", json={"valor": 99999}).status_code, 400)
         self.assertEqual(self.client.post("/api/perfil/saldo", json={"valor": "abc"}).status_code, 400)
+
+    def test_add_balance_rejects_negative(self):
+        r = self.client.post("/api/perfil/saldo", json={"valor": -50})
+        self.assertEqual(r.status_code, 400, r.get_json())
+
+    def test_add_balance_rejects_decimal(self):
+        # Deve recusar valores com centavos (apenas inteiros são aceitos).
+        r = self.client.post("/api/perfil/saldo", json={"valor": 50.75})
+        self.assertEqual(r.status_code, 400, r.get_json())
 
     def test_booking_rejects_date_only(self):
         # Sem hora (só data) deve ser rejeitado.

@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../authContext'
 import { Header } from '../Components/Header'
 import { BancadaImg } from '../Assets/BancadaImg'
-import { requestBooking } from '../authSession'
+import { requestBooking, fetchBalance } from '../authSession'
 import './Bancada.css'
 
 const brl = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
@@ -17,6 +17,7 @@ export const Bancada = () => {
     const [fim, setFim] = useState('')
     const [message, setMessage] = useState('')
     const [busy, setBusy] = useState(false)
+    const [saldo, setSaldo] = useState(null) // saldo do cliente, para checagem prévia
 
     useEffect(() => {
         let active = true
@@ -31,6 +32,15 @@ export const Bancada = () => {
         return () => { active = false }
     }, [id])
 
+    // Carrega o saldo do cliente para avisar ANTES de solicitar (o backend também
+    // valida atomicamente no débito; esta checagem é só feedback de UX).
+    useEffect(() => {
+        if (user?.role !== 'customer') return
+        let active = true
+        fetchBalance().then((s) => { if (active) setSaldo(Number(s)) }).catch(() => {})
+        return () => { active = false }
+    }, [user])
+
     const estimativa = useMemo(() => {
         if (!inicio || !fim || !bancada) return null
         const minutos = (new Date(fim).getTime() - new Date(inicio).getTime()) / 60000
@@ -38,9 +48,19 @@ export const Bancada = () => {
         return { minutos, preco: Number(bancada.preco_hora) * minutos / 60 }
     }, [inicio, fim, bancada])
 
+    const saldoInsuficiente = useMemo(
+        () => estimativa != null && saldo != null && estimativa.preco > saldo,
+        [estimativa, saldo],
+    )
+
     async function submit(event) {
         event.preventDefault()
         if (!bancada || !estimativa) return
+        // Checagem prévia de saldo (o backend revalida no débito atômico).
+        if (saldoInsuficiente) {
+            setMessage(`Saldo insuficiente: você tem ${brl(saldo)} e esta reserva custa ${brl(estimativa.preco)}. Adicione saldo no seu perfil.`)
+            return
+        }
         const formElement = event.currentTarget
         setBusy(true)
         setMessage('')
@@ -50,6 +70,8 @@ export const Bancada = () => {
             setInicio('')
             setFim('')
             formElement.reset()
+            // Atualiza o saldo local após o débito.
+            fetchBalance().then((s) => setSaldo(Number(s))).catch(() => {})
         } catch (error) {
             if (error.code === 'INSUFFICIENT_FUNDS') setMessage('Saldo insuficiente para solicitar esta bancada.')
             else if (error.code === 'BOOKING_CONFLICT') setMessage('Esse horário já está ocupado. Escolha outro.')
@@ -60,7 +82,7 @@ export const Bancada = () => {
     }
 
     return (
-        <main className='bancadaPage'>
+        <main id='conteudo-principal' className='bancadaPage'>
             <Header />
             {status === 'loading' && <p role='status' className='bancadaMsg'>Carregando bancada…</p>}
             {status === 'error' && <p role='alert' className='bancadaMsg'>Não foi possível encontrar esta bancada.</p>}
@@ -109,8 +131,10 @@ export const Bancada = () => {
                                         <label>Fim
                                             <input name='fim' type='datetime-local' required value={fim} onChange={(e) => setFim(e.target.value)} />
                                         </label>
+                                        {saldo != null && <p className='bancadaEstimate'>Seu saldo: {brl(saldo)}</p>}
                                         {estimativa && <p className='bancadaEstimate'>Duração: {estimativa.minutos} min · Total estimado: {brl(estimativa.preco)} (debitado do saldo ao solicitar)</p>}
-                                        <button type='submit' className='bancadaConfirm' disabled={busy || !estimativa}>{busy ? 'Enviando…' : 'Solicitar'}</button>
+                                        {saldoInsuficiente && <p className='bancadaBookingMsg' role='alert'>Saldo insuficiente para esta reserva. Adicione saldo no seu perfil.</p>}
+                                        <button type='submit' className='bancadaConfirm' disabled={busy || !estimativa || saldoInsuficiente}>{busy ? 'Enviando…' : 'Solicitar'}</button>
                                     </form>
                                 </>
                             ) : (

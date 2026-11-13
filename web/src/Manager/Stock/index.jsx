@@ -31,7 +31,7 @@ export const Stock=()=>{
     const sortedList=[...items].sort(sortFunctions[sortBy])
 
     return(
-        <main className='stockPage'>
+        <main id='conteudo-principal' className='stockPage'>
             <Header/>
             <div className='stockContent max-w-[1390px] mx-auto px-4'>
                 <div className='stockTop flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>

@@ -41,7 +41,7 @@ export const Settings=()=>{
     }
 
     return(
-        <main className='settingsPage'>
+        <main id='conteudo-principal' className='settingsPage'>
             <Header/>
             <div className='settingsContent'>
                 <h1>Configurações</h1>

@@ -12,6 +12,7 @@ from models.pedido import Avaliacao
 from models.restaurante import Prato
 from validations import check_json
 from utils import err_json, slugify
+import placeholders
 import storage
 
 
@@ -54,7 +55,7 @@ def _prato_json(prato):
         "disponivel": bool(prato.disponivel),
         "id_cardapio": prato.id_cardapio,
         "id_restaurante": prato.id_restaurante,
-        "imagem": storage.url_for_key(prato.imagem) if prato.imagem else None,
+        "imagem": placeholders.image_url_or_placeholder(prato.imagem, storage.url_for_key),
         "categorias": [assoc.categoria.nome for assoc in prato.associacao_categoria],
         "ingredientes": [
             {
@@ -74,7 +75,7 @@ def _restaurante_json(restaurante, *, incluir_pratos=False, rating=None):
         "id": restaurante.id,
         "nome": restaurante.nome,
         "slug": restaurante.slug,
-        "imagem": storage.url_for_key(restaurante.imagem) if restaurante.imagem else None,
+        "imagem": placeholders.image_url_or_placeholder(restaurante.imagem, storage.url_for_key),
         "categorias": [categoria.nome for categoria in restaurante.categorias],
         # UX-001: avaliação real agregada; None quando não há avaliações.
         "avaliacao_media": media,

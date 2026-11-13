@@ -29,11 +29,11 @@ export const Restaurant = () => {
     }, [slug])
 
     if (status === 'loading') {
-        return <main className="restaurantPage"><Header/><p>Carregando restaurante…</p></main>
+        return <main id="conteudo-principal" className="restaurantPage"><Header/><p>Carregando restaurante…</p></main>
     }
     if (status === 'error' || !restaurant) {
         return (
-            <main className="restaurantPage">
+            <main id="conteudo-principal" className="restaurantPage">
                 <Header/>
                 <h1>Restaurante não encontrado :/</h1>
                 <Link to="/">Voltar para o início</Link>
@@ -42,7 +42,7 @@ export const Restaurant = () => {
     }
 
     return (
-        <main className="restaurantPage">
+        <main id="conteudo-principal" className="restaurantPage">
             <Header/>
            {/* Banner */}
             <section className="restaurantPageBanner h-[200px] md:h-[320px]">

@@ -128,3 +128,18 @@ class Config:
     # Rate limit: memória em dev; produção deve apontar para um store compartilhado
     # (ver SEC-003). Nunca usar este store como armazenamento de logs.
     RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI", "memory://")
+    # Habilitado por padrão. Desligado apenas em contextos de teste/E2E (muitos
+    # logins em sequência) via RATELIMIT_ENABLED=0. Lido no init do Flask-Limiter.
+    RATELIMIT_ENABLED = os.environ.get("RATELIMIT_ENABLED", "1") != "0"
+
+    # Logs no Redis (Upstash REST). Opcional: quando ambos estão presentes, os
+    # logs continuam indo para stdout E são empurrados (best-effort) para uma
+    # lista no Redis via API REST. Ausentes => apenas stdout. Nunca usado como
+    # caminho crítico: falha silenciosa e timeout curto.
+    UPSTASH_REDIS_REST_URL = os.environ.get("UPSTASH_REDIS_REST_URL") or None
+    UPSTASH_REDIS_REST_TOKEN = os.environ.get("UPSTASH_REDIS_REST_TOKEN") or None
+    # Chave (lista) onde os logs são acumulados e tamanho máximo retido.
+    LOG_REDIS_KEY = os.environ.get("LOG_REDIS_KEY", "logs:app")
+    LOG_REDIS_MAX_ENTRIES = int(os.environ.get("LOG_REDIS_MAX_ENTRIES", "5000"))
+    # Timeout (segundos) da chamada REST. Curto de propósito: nunca atrasar a resposta.
+    LOG_REDIS_TIMEOUT = float(os.environ.get("LOG_REDIS_TIMEOUT", "1.5"))

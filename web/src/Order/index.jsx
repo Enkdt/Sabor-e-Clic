@@ -80,7 +80,7 @@ export const Order=()=>{
 
     if(status==='done' && pedido){
         return(
-            <main className='orderPage'>
+            <main id='conteudo-principal' className='orderPage'>
                 <Header/>
                 <div className='orderContent px-4 md:px-10 lg:px-[100px]'>
                     <h1 className='orderTitle text-[32px] md:text-[36px]'>Pedido confirmado!</h1>
@@ -106,7 +106,7 @@ export const Order=()=>{
     }
 
     return(
-        <main className='orderPage'>
+        <main id='conteudo-principal' className='orderPage'>
             <Header/>
             <div className='orderContent px-4 md:px-10 lg:px-[100px]'>
                 <h1 className='orderTitle text-[32px] md:text-[36px]'>Meu carrinho</h1>

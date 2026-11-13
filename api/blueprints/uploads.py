@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, request, send_from_directory
 
 from decorators import validar
 from utils import err_json
+import placeholders
 import storage
 
 uploads_bp = Blueprint("uploads", __name__, url_prefix="/api")
@@ -31,3 +32,14 @@ def enviar_imagem():
 def servir_imagem(key):
     # send_from_directory faz safe-join: nega path traversal (../) automaticamente.
     return send_from_directory(storage.UPLOAD_DIR, key)
+
+
+@uploads_bp.get("/placeholder")
+def servir_placeholder():
+    """Imagem padrão (stock) servida quando a entidade não tem foto própria.
+
+    Público (não exige sessão): é apenas uma imagem genérica, sem dados sensíveis.
+    O arquivo é estático e versionado; gerado com Pillow na primeira chamada se faltar.
+    """
+    caminho = placeholders.default_placeholder_path()
+    return send_from_directory(caminho.parent, caminho.name, mimetype="image/png")

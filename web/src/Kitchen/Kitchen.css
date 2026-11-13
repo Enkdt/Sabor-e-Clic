@@ -24,6 +24,22 @@
     max-width: 60ch;
 }
 
+.kitchenDishesPicker{
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.kitchenDishesPicker select{
+    font: inherit;
+    padding: .4rem .6rem;
+    border-radius: .35rem;
+    border: 1px solid var(--muted-text-color);
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
 .kitchenList{
     display: flex;
     flex-direction: column;

@@ -32,6 +32,11 @@ os.environ["APP_ENV"] = "test"
 os.environ.setdefault("SECRET_KEY", "e2e-teste-chave-nao-sensivel-0123456789abcd")
 os.environ.setdefault("SESSION_COOKIE_SECURE", "0")
 os.environ.setdefault("FRONTEND_BASE_URL", "http://localhost:5173")
+# E2E executa muitos logins/requisições em sequência contra um banco descartável;
+# os limites de produção (ex.: 5 logins/min) derrubariam a suíte com 429. Definido
+# ANTES de importar app/config para que o Flask-Limiter já inicie desabilitado.
+# Afeta APENAS este servidor de teste isolado (nunca produção).
+os.environ["RATELIMIT_ENABLED"] = "0"
 
 from app import create_app  # noqa: E402  (precisa vir depois de configurar o ambiente)
 from migrations import run_migrations  # noqa: E402

@@ -6,6 +6,7 @@ import { useTheme } from '../../themeContext'
 import { Banner } from '../../Assets/Banner'
 import { CartDrawer } from '../CartDrawer'
 import { Avatar } from '../Avatar'
+import { SkipLink } from '../SkipLink'
 import './Header.css'
 export const Header=()=>{
 
@@ -20,6 +21,7 @@ export const Header=()=>{
 
     return(
         <>
+            <SkipLink/>
             <header className='header'>
                 <Banner/>
                 <nav className='headerNav px-3 md:px-6 lg:px-10'>

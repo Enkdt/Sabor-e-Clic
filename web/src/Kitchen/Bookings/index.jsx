@@ -42,7 +42,7 @@ export const KitchenBookings=()=>{
     }
 
     return(
-        <main className='bookingsPage'>
+        <main id='conteudo-principal' className='bookingsPage'>
             <Header/>
             <div className='bookingsContent'>
                 <h1>Pedidos de bancada</h1>

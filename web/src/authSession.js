@@ -193,6 +193,20 @@ export async function fetchDashboard(periodo = '30', { request = fetch } = {}) {
   return response.json();
 }
 
+export async function fetchRestaurantMetrics(id, periodo = '30', { request = fetch } = {}) {
+  const response = await request(
+    `/api/restaurantes/${encodeURIComponent(id)}/metricas?periodo=${encodeURIComponent(periodo)}`,
+    { credentials: 'include' },
+  );
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(data.error?.message || 'Não foi possível carregar as métricas do restaurante.');
+    error.code = data.error?.code;
+    throw error;
+  }
+  return data;
+}
+
 export async function createStaff(payload, { request = fetch } = {}) {
   const csrfToken = await getCsrfToken(request);
   const response = await request('/api/usuarios/staff', {

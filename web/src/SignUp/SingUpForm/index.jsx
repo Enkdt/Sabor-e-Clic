@@ -103,7 +103,7 @@ export const SignUpForm=()=>{
     };
 
     return(
-        <div className='signupForm'>
+        <div id='conteudo-principal' className='signupForm'>
             <h1 className='transition-all duration-500 ease text-[44px] md:text-[54px] lg:text-[64px]'>Bem-vindo!</h1>
             <h3 className='transition-all duration-500 ease text-[14px] lg:text-[16px]'>Cadastre-se para aproveitar todo nosso app</h3>
             <form onSubmit={sendSignUp}>

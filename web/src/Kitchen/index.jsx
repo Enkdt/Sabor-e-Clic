@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useAuth } from '../authContext'
 import { fetchKitchenOrders, confirmKitchenItem, denyKitchenItem } from '../authSession'
 import { Header } from '../Components/Header'
 import './Kitchen.css'
@@ -6,6 +7,9 @@ import './Kitchen.css'
 const STATUS_LABEL={ aguardando:'Aguardando confirmação', confirmado:'Confirmado — em preparo' }
 
 export const Kitchen=()=>{
+    const { user }=useAuth()
+    const restaurantes=useMemo(()=>user?.restaurantes || [], [user])
+    const [selecionado,setSelecionado]=useState(()=>restaurantes[0]?.id ?? null) // id do restaurante ativo
     const [itens,setItens]=useState([])
     const [status,setStatus]=useState('loading') // loading | ready | error
     const [busy,setBusy]=useState(null) // chave "pedido-prato" em ação
@@ -26,6 +30,12 @@ export const Kitchen=()=>{
             .catch(()=>{ if(active) setStatus('error') })
         return ()=>{ active=false }
     },[])
+
+    // Itens do restaurante selecionado (filtra no cliente; o backend já restringe
+    // aos restaurantes do cozinheiro). Admin, sem restaurantes filiados, vê todos.
+    const itensVisiveis=useMemo(()=>(
+        selecionado==null ? itens : itens.filter((i)=>i.id_restaurante===selecionado)
+    ),[itens,selecionado])
 
     const chave=(item)=>`${item.id_pedido}-${item.id_prato}`
 
@@ -49,19 +59,27 @@ export const Kitchen=()=>{
     }
 
     return(
-        <main className='kitchenPage'>
+        <main id='conteudo-principal' className='kitchenPage'>
             <Header/>
             <div className='kitchenContent'>
                 <h1>Cozinha</h1>
                 <p className='kitchenSubtitle'>Confirme ou recuse os itens dos seus restaurantes. Itens confirmados são preparados e entregues automaticamente.</p>
 
+                {restaurantes.length>0 && (
+                    <label className='kitchenDishesPicker'>Restaurante:
+                        <select value={selecionado ?? ''} onChange={(e)=>setSelecionado(Number(e.target.value))}>
+                            {restaurantes.map((r)=>(<option key={r.id} value={r.id}>{r.nome}</option>))}
+                        </select>
+                    </label>
+                )}
+
                 {status==='loading' && <p role='status'>Carregando itens…</p>}
                 {status==='error' && <p role='alert'>Não foi possível carregar os itens.</p>}
-                {status==='ready' && itens.length===0 && <p>Nenhum item aguardando no momento.</p>}
+                {status==='ready' && itensVisiveis.length===0 && <p>Nenhum item aguardando no momento.</p>}
                 {error && <p role='alert' className='kitchenError'>{error}</p>}
 
                 <div className='kitchenList'>
-                    {status==='ready' && itens.map((item)=>(
+                    {status==='ready' && itensVisiveis.map((item)=>(
                         <article key={chave(item)} className='kitchenCard'>
                             <div className='kitchenCardImg' style={item.imagem ? { backgroundImage:`url(${item.imagem})` } : undefined}></div>
                             <div className='kitchenCardInfo'>

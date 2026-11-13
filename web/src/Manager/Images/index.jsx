@@ -46,7 +46,7 @@ export const Images=()=>{
     }
 
     return(
-        <main className='imagesPage'>
+        <main id='conteudo-principal' className='imagesPage'>
             <Header/>
             <div className='imagesContent'>
                 <h1>Restaurantes</h1>

@@ -36,7 +36,7 @@ export const Staff=()=>{
     }
 
     return(
-        <main className='staffPage'>
+        <main id='conteudo-principal' className='staffPage'>
             <Header/>
             <div className='staffForm px-4 py-8 md:px-10 lg:px-[88px]'>
                 <h1 className='text-[28px] md:text-[36px]'>Criar conta de equipe</h1>

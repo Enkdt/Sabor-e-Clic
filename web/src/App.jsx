@@ -21,6 +21,7 @@ import { Settings } from './Settings';
 import { Stock } from './Manager/Stock';
 import { StockAdd } from './Manager/StockAdd';
 import { Dashboard } from './Manager/Dashboard';
+import { RestaurantMetrics } from './Manager/RestaurantMetrics';
 import { Staff } from './Manager/Staff';
 import { Hub } from './Manager/Hub';
 import { Images } from './Manager/Images';
@@ -96,6 +97,8 @@ return (
       <Route path='/gerente/estoque/adicionar' element={<Protected roles={['admin']}><StockAdd/></Protected>}/>
       <Route path='/gerente/estoque/:id/editar' element={<Protected roles={['admin']}><StockAdd/></Protected>}/>
       <Route path='/gerente/dashboard' element={<Protected roles={['admin']}><Dashboard/></Protected>}/>
+      <Route path='/gerente/restaurantes/:id/metricas' element={<Protected roles={['cook','admin']}><RestaurantMetrics/></Protected>}/>
+      <Route path='/gerente/restaurantes/metricas' element={<Protected roles={['cook','admin']}><RestaurantMetrics/></Protected>}/>
       <Route path='/gerente/staff' element={<Protected roles={['admin']}><Staff/></Protected>}/>
       <Route path='/gerente/imagens' element={<Protected roles={['admin']}><Images/></Protected>}/>
       <Route path='/gerente/filiacoes' element={<Protected roles={['admin']}><Affiliations/></Protected>}/>

@@ -22,7 +22,7 @@ export const Catalog=()=>{
     },[])
 
     return(
-        <main className='catalogPage'>
+        <main id='conteudo-principal' className='catalogPage'>
             <Header/>
             <div className='catalogContent max-w-[1390px] mx-auto'>
                 <h1 className='catalogTitle'>Todos os restaurantes</h1>

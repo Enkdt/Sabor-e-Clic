@@ -5,6 +5,7 @@ import { Header } from "../Components/Header"
 import './Home.css'
 import { RestaurantCard } from "./RestaurantCard"
 import { NavLink } from "react-router-dom"
+import { CONTEUDO_PRINCIPAL_ID } from "../Components/SkipLink"
 export const Home=()=>{
 
     const [restaurants, setRestaurants] = useState([])
@@ -27,7 +28,7 @@ export const Home=()=>{
         <>  
             <Header/>
             <Ad1/>
-            <div className="restaurantSec max-w-[1390px] mx-auto">
+            <div id={CONTEUDO_PRINCIPAL_ID} className="restaurantSec max-w-[1390px] mx-auto">
                 <div className="restaurantSecP">
                     <p className="restaurantSecTitle">Restaurantes</p>
                     <NavLink to="/catalogo" className="restaurantSecSM">

@@ -8,7 +8,7 @@ import { formatCurrency } from '../../utils/formatCurrency'
 import './CartDrawer.css'
 export const CartDrawer=({open,onClose})=>{
 
-    const { items, subtotal, setQuantity, removeItem }=useCart()
+    const { items, subtotal, setQuantity, removeItem, clear }=useCart()
 
     useEffect(()=>{
         if(!open){
@@ -53,6 +53,9 @@ export const CartDrawer=({open,onClose})=>{
                     <NavLink to='/pedido' className='cartDrawerLink' onClick={onClose}>
                         <NextBtn text='Continuar'/>
                     </NavLink>
+                    {items.length>0 && (
+                        <button type='button' className='cartDrawerClear' onClick={clear}>Esvaziar carrinho</button>
+                    )}
                     <button type='button' className='cartDrawerBack' onClick={onClose}>Voltar às compras</button>
                 </div>
             </aside>

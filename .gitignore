@@ -56,4 +56,6 @@ scripts/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
 .vercel
+.github/

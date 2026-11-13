@@ -26,12 +26,16 @@ export default defineConfig({
   webServer: [
     {
       // Backend Flask com banco de dados isolado e descartável.
-      command: '.venv/bin/python e2e_server.py',
+      // Caminho do interpretador do venv difere por SO (Windows: Scripts/python.exe).
+      command: process.platform === 'win32'
+        ? '.venv\\Scripts\\python.exe e2e_server.py'
+        : '.venv/bin/python e2e_server.py',
       cwd: '../api',
       url: 'http://127.0.0.1:5000/api/restaurantes',
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
-      env: { DATABASE: '/tmp/sabor-e2e.db', E2E_PORT: '5000', APP_ENV: 'development' },
+      // E2E_DB vazio => e2e_server.py cria um SQLite temporário isolado por execução.
+      env: { E2E_PORT: '5000', APP_ENV: 'test' },
     },
     {
       // Frontend Vite (proxy /api -> 127.0.0.1:5000).

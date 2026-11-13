@@ -128,8 +128,8 @@ from decimal import Decimal, InvalidOperation
 
 # Recarga de saldo por SIMULAÇÃO (não há gateway real). Valores limitados para evitar abuso.
 # shortcut: recarga fake; trocar por pagamento/entrada real quando houver gateway.
-RECARGA_MIN = Decimal("1.00")
-RECARGA_MAX = Decimal("1000.00")
+RECARGA_MIN = 1
+RECARGA_MAX = 1000
 
 
 @clientes_bp.get("/perfil/saldo")
@@ -143,19 +143,33 @@ def obter_saldo():
 @validar
 @permission(customer)
 def adicionar_saldo():
-    """Adiciona saldo simulado à conta do cliente (entre R$1 e R$1000 por recarga)."""
+    """Adiciona saldo simulado à conta do cliente (valor inteiro, entre R$1 e R$1000).
+
+    O valor é tratado como INTEIRO (sem centavos): o frontend envia um número inteiro
+    e aqui recusamos valores não-inteiros, negativos ou fora da faixa.
+    """
     data = request.get_json(silent=True)
     if not check_json(data):
         return err_json("INVALID_JSON", "Envie os dados em formato JSON válido.", status=400)
+    valor_bruto = data.get("valor")
+    # Aceita apenas inteiros (ou strings que representem inteiros). Rejeita decimais,
+    # negativos e lixo. bool é subclasse de int, então barramos explicitamente.
+    if isinstance(valor_bruto, bool):
+        return err_json("VALIDATION_FAILED", "Informe um valor inteiro válido.", status=400)
     try:
-        valor = Decimal(str(data.get("valor"))).quantize(Decimal("0.01"))
-    except (InvalidOperation, TypeError, ValueError):
-        return err_json("VALIDATION_FAILED", "Informe um valor numérico válido.", status=400)
+        if isinstance(valor_bruto, float):
+            raise ValueError("decimais não são permitidos")
+        valor = int(str(valor_bruto).strip())
+    except (TypeError, ValueError):
+        return err_json("VALIDATION_FAILED", "Informe um valor inteiro válido (sem centavos).", status=400)
+    if valor <= 0:
+        return err_json("VALIDATION_FAILED", "O valor não pode ser negativo ou zero.", status=400)
     if valor < RECARGA_MIN or valor > RECARGA_MAX:
         return err_json("VALIDATION_FAILED", f"O valor deve estar entre R${RECARGA_MIN} e R${RECARGA_MAX}.", status=400)
     cliente = g.current_user.cliente
     try:
-        novo = Decimal(str(cliente.saldo)) + valor
+        # Mantém o saldo como inteiro (sem centavos), coerente com a recarga inteira.
+        novo = int(Decimal(str(cliente.saldo))) + valor
         CRUD.update.cliente(cliente.id_usuario, {"saldo": novo})
     except SQLAlchemyError:
         db.session.rollback()

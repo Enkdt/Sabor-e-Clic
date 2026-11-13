@@ -28,7 +28,7 @@ export const KitchenOverview=()=>{
     },[user])
 
     return(
-        <main className='kitchenOverviewPage'>
+        <main id='conteudo-principal' className='kitchenOverviewPage'>
             <Header/>
             <div className='kitchenOverviewContent'>
                 <h1>Minhas cozinhas</h1>

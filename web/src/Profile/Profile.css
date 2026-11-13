@@ -64,13 +64,15 @@
     margin-top: .5rem;
 }
 
-.profilePage .profileRecarga select{
+.profilePage .profileRecarga select,
+.profilePage .profileRecarga input{
     font: inherit;
     padding: .3rem .5rem;
     border-radius: .3rem;
     border: 1px solid var(--muted-text-color);
     background: var(--bg-color);
     color: var(--text-color);
+    max-width: 140px;
 }
 
 .profilePage .profileRecarga button{

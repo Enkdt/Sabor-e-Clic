@@ -38,10 +38,9 @@ O fim deste projeto é facilitar e melhorar a experiência de gerência para os 
 </div>
 
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=py,flask,html" alt="https://skillicons.dev"/><br>
-  <img src="https://skillicons.dev/icons?i=css,javascript,react" alt="https://skillicons.dev"/><br>
-  <img src="https://skillicons.dev/icons?i=figma,mysql,git" alt="https://skillicons.dev"/>
-
+  <img src="https://skillicons.dev/icons?i=py,flask,nodejs,vite" alt="https://skillicons.dev"/><br>
+  <img src="https://skillicons.dev/icons?i=html,css,javascript,react" alt="https://skillicons.dev"/><br>
+  <img src="https://skillicons.dev/icons?i=mysql,figma,vercel,redis" alt="https://skillicons.dev"/><br>
 </p>
 
 ---
